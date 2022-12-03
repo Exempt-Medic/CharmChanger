@@ -26,7 +26,7 @@ jobs:
         uses: BadMagic100/setup-hk@v1
         with:
           apiPath: API
-          #dependencyFilePath: CharmChanger/ModDependencies.txt
+          dependencyFilePath: CharmChanger/ModDependencies.txt
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3

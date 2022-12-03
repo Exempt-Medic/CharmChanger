@@ -2,24 +2,38 @@ using Modding;
 using System;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using Satchel.BetterMenus;
 using UnityEngine;
 using GlobalEnums;
 using System.Collections;
+using Satchel.BetterMenus;
+using Modding.Menu;
 
 namespace CharmChanger
 {
-    #region Menu
     public static class ModMenu
     {
         private static Menu? MenuRef;
+        private static Menu? GrubsongMenuRef;
+        private static MenuScreen? GrubsongMenu;
+        private static Menu? StalwartShellMenuRef;
+        private static MenuScreen? StalwartShellMenu;
+        private static Menu? BaldurShellMenuRef;
+        private static MenuScreen? BaldurShellMenu;
         public static MenuScreen CreateModMenu(MenuScreen modlistmenu)
         {
+            #region Main Menu
             MenuRef ??= new Menu("Charm Changer Options", new Element[]
             {
-                #region Grubsong Menu
-                new TextPanel("Grubsong Options", 1000, 70),
+                Blueprints.NavigateToMenu("Grubsong Options", "", () => GrubsongMenu),
+                Blueprints.NavigateToMenu("Stalwart Shell Options", "", () => StalwartShellMenu),
+                Blueprints.NavigateToMenu("Baldur Shell Options", "", () => BaldurShellMenu),
+            });
 
+            MenuScreen MainMenuScreen = MenuRef.GetMenuScreen(modlistmenu);
+            #endregion
+            #region Grubsong Menu
+            GrubsongMenuRef ??= new Menu("Grubsong Options", new Element[]
+            {
                 new CustomSlider(
                     "Soul",
                     f =>
@@ -27,7 +41,7 @@ namespace CharmChanger
                         CharmChangerMod.LS.grubsongDamageSoul = (int)f;
                         CharmChangerMod.LS.grubsongComboBool = true;
                         CharmChangerMod.LS.grubsongDamageSoulCombo = Mathf.Min(100, (int)f + (CharmChangerMod.LS.grubsongComboBool ? 10 : 0));
-                        MenuRef?.Update();
+                        GrubsongMenuRef?.Update();
                     },
                     () => CharmChangerMod.LS.grubsongDamageSoul,
                     0f,
@@ -56,14 +70,16 @@ namespace CharmChanger
                     0f,
                     100f,
                     true),
-#endregion
-                #region Stalwart Shell Menu
-                new TextPanel("Stalwart Shell Options", 1000, 70),
-
-                new TextPanel("Invulnerability Time"),
+            });
+            GrubsongMenu = GrubsongMenuRef.GetMenuScreen(MainMenuScreen);
+            #endregion
+            #region Stalwart Shell Menu
+            StalwartShellMenuRef ??= new Menu("Stalwart Shell Options", new Element[]
+            {
+                new TextPanel("Invulnerability Time", 1000, 50),
 
                 new CustomSlider(
-                    "(twentieths)",
+                    "(twentieths of seconds)",
                     f =>
                     {
                         CharmChangerMod.LS.stalwartShellInvulnerability = f;
@@ -73,10 +89,10 @@ namespace CharmChanger
                     100f,
                     true),
 
-                new TextPanel("Inaction Time"),
+                new TextPanel("Inaction Time", 1000, 50),
 
                 new CustomSlider(
-                    "(hundreths)",
+                    "(hundreths of seconds)",
                     f =>
                     {
                         CharmChangerMod.LS.stalwartShellRecoil = f;
@@ -84,11 +100,13 @@ namespace CharmChanger
                     () => CharmChangerMod.LS.stalwartShellRecoil,
                     0f,
                     20f,
-                    true),
-                #endregion
-                #region Baldur Shell Menu
-                new TextPanel("Baldur Shell Options", 1000, 70),
-
+                    true)
+            });
+            StalwartShellMenu = StalwartShellMenuRef.GetMenuScreen(MainMenuScreen);
+            #endregion
+            #region Baldur Shell Menu
+            BaldurShellMenuRef ??= new Menu("Baldur Shell Options", new Element[]
+            {
                 new CustomSlider(
                     "???",
                     f =>
@@ -98,12 +116,10 @@ namespace CharmChanger
                     () => CharmChangerMod.LS.stalwartShellInvulnerability,
                     0f,
                     25f,
-                    false,
-                    Id:"Baldur???"),
-
-#endregion
+                    false)
             });
-
+            BaldurShellMenu = BaldurShellMenuRef.GetMenuScreen(MainMenuScreen);
+            #endregion
             return MenuRef.GetMenuScreen(modlistmenu);
         }
         #region Bool Option Definition
@@ -132,10 +148,9 @@ namespace CharmChanger
         }
 #endregion
     }
-    #endregion
     public class CharmChangerMod : Mod, ICustomMenuMod, ILocalSettings<LocalSettings>
     {
-        #region Biolerplate
+        #region Boilerplate
 
         private static CharmChangerMod? _instance;
 
