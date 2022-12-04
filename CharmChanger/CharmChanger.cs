@@ -1,153 +1,14 @@
+using GlobalEnums;
 using Modding;
 using System;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using HutongGames.PlayMaker;
 using UnityEngine;
-using GlobalEnums;
 using System.Collections;
-using Satchel.BetterMenus;
-using Modding.Menu;
+using SFCore.Utils;
 
 namespace CharmChanger
 {
-    public static class ModMenu
-    {
-        private static Menu? MenuRef;
-        private static Menu? GrubsongMenuRef;
-        private static MenuScreen? GrubsongMenu;
-        private static Menu? StalwartShellMenuRef;
-        private static MenuScreen? StalwartShellMenu;
-        private static Menu? BaldurShellMenuRef;
-        private static MenuScreen? BaldurShellMenu;
-        public static MenuScreen CreateModMenu(MenuScreen modlistmenu)
-        {
-            #region Main Menu
-            MenuRef ??= new Menu("Charm Changer Options", new Element[]
-            {
-                Blueprints.NavigateToMenu("Grubsong Options", "", () => GrubsongMenu),
-                Blueprints.NavigateToMenu("Stalwart Shell Options", "", () => StalwartShellMenu),
-                Blueprints.NavigateToMenu("Baldur Shell Options", "", () => BaldurShellMenu),
-            });
-
-            MenuScreen MainMenuScreen = MenuRef.GetMenuScreen(modlistmenu);
-            #endregion
-            #region Grubsong Menu
-            GrubsongMenuRef ??= new Menu("Grubsong Options", new Element[]
-            {
-                new CustomSlider(
-                    "Soul",
-                    f =>
-                    {
-                        CharmChangerMod.LS.grubsongDamageSoul = (int)f;
-                        CharmChangerMod.LS.grubsongComboBool = true;
-                        CharmChangerMod.LS.grubsongDamageSoulCombo = Mathf.Min(100, (int)f + (CharmChangerMod.LS.grubsongComboBool ? 10 : 0));
-                        GrubsongMenuRef?.Update();
-                    },
-                    () => CharmChangerMod.LS.grubsongDamageSoul,
-                    0f,
-                    100f,
-                    true),
-
-                new CustomSlider(
-                    "Grubberfly's Soul",
-                    f =>
-                    {
-                        CharmChangerMod.LS.grubsongDamageSoulCombo = (int)f;
-                        CharmChangerMod.LS.grubsongComboBool = false;
-                    },
-                    () => CharmChangerMod.LS.grubsongDamageSoulCombo,
-                    0f,
-                    100f,
-                    true),
-
-                new CustomSlider(
-                    "Weaversong Soul",
-                    f =>
-                    {
-                        CharmChangerMod.LS.grubsongWeaversongSoul = (int)f;
-                    },
-                    () => CharmChangerMod.LS.grubsongWeaversongSoul,
-                    0f,
-                    100f,
-                    true),
-            });
-            GrubsongMenu = GrubsongMenuRef.GetMenuScreen(MainMenuScreen);
-            #endregion
-            #region Stalwart Shell Menu
-            StalwartShellMenuRef ??= new Menu("Stalwart Shell Options", new Element[]
-            {
-                new TextPanel("Invulnerability Time", 1000, 50),
-
-                new CustomSlider(
-                    "(twentieths of seconds)",
-                    f =>
-                    {
-                        CharmChangerMod.LS.stalwartShellInvulnerability = f;
-                    },
-                    () => CharmChangerMod.LS.stalwartShellInvulnerability,
-                    0f,
-                    100f,
-                    true),
-
-                new TextPanel("Inaction Time", 1000, 50),
-
-                new CustomSlider(
-                    "(hundreths of seconds)",
-                    f =>
-                    {
-                        CharmChangerMod.LS.stalwartShellRecoil = f;
-                    },
-                    () => CharmChangerMod.LS.stalwartShellRecoil,
-                    0f,
-                    20f,
-                    true)
-            });
-            StalwartShellMenu = StalwartShellMenuRef.GetMenuScreen(MainMenuScreen);
-            #endregion
-            #region Baldur Shell Menu
-            BaldurShellMenuRef ??= new Menu("Baldur Shell Options", new Element[]
-            {
-                new CustomSlider(
-                    "???",
-                    f =>
-                    {
-                        CharmChangerMod.LS.stalwartShellInvulnerability = f;
-                    },
-                    () => CharmChangerMod.LS.stalwartShellInvulnerability,
-                    0f,
-                    25f,
-                    false)
-            });
-            BaldurShellMenu = BaldurShellMenuRef.GetMenuScreen(MainMenuScreen);
-            #endregion
-            return MenuRef.GetMenuScreen(modlistmenu);
-        }
-        #region Bool Option Definition
-        public static HorizontalOption BoolOption(
-            string name,
-            string description,
-            Action<bool> applySetting,
-            Func<bool> loadSetting,
-            string _true = "True",
-            string _false = "False",
-            string Id = "__UseName")
-        {
-            if (Id == "__UseName")
-            {
-                Id = name;
-            }
-
-            return new HorizontalOption(
-                name,
-                description,
-                new[] { _true, _false },
-                (i) => applySetting(i == 0),
-                () => loadSetting() ? 0 : 1,
-                Id
-            );
-        }
-#endregion
-    }
     public class CharmChangerMod : Mod, ICustomMenuMod, ILocalSettings<LocalSettings>
     {
         #region Boilerplate
@@ -170,29 +31,40 @@ namespace CharmChanger
         public void OnLoadLocal(LocalSettings s) => LS = s;
         public LocalSettings OnSaveLocal() => LS;
         public override string GetVersion() => GetType().Assembly.GetName().Version.ToString();
-        public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates) => ModMenu.CreateModMenu(modListMenu);
+        public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? _) => ModMenu.CreateMenuScreen(modListMenu);
         public bool ToggleButtonInsideMenu => false;
-
         public CharmChangerMod() : base("CharmChanger")
         {
             _instance = this;
         }
         #endregion
+
         #region Init
         public override void Initialize()
         {
             Log("Initializing");
 
+            #region Grubsong Init
             On.HeroController.TakeDamage += OnHCTakeDamage;
-            On.HeroController.StartRecoil += OnHCStartRecoil;
             On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter += OnCallMethodProperAction;
+            #endregion
+            #region Stalwart Shell Init
+            On.HeroController.StartRecoil += OnHCStartRecoil;
+            #endregion
+            #region Baldur Shell Init
+            On.BeginRecoil.OnEnter += OnBeginRecoilAction;
+            On.PlayerData.MaxHealth += OnPDMaxHealth;
+            #endregion
+            #region Fury of the Fallen Init
+            On.HutongGames.PlayMaker.Actions.IntCompare.OnEnter += OnIntCompareAction;
+            On.HutongGames.PlayMaker.Actions.BoolAllTrue.OnEnter += OnBoolAllTrueAction;
+            #endregion
 
             Log("Initialized");
         }
-
         #endregion
 
-        #region Grubsong
+        #region Grubsong Changes
         private void OnHCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
         {
             // Grubsong
@@ -215,33 +87,124 @@ namespace CharmChanger
             orig(self);
         }
         #endregion
-        #region Stalwart Shell
+        #region Stalwart Shell Changes
         private IEnumerator OnHCStartRecoil(On.HeroController.orig_StartRecoil orig, HeroController self, CollisionSide impactSide, bool spawnDamageEffect, int damageAmount)
         {
-            self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability / 20f;
+            self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability / 100f;
             self.RECOIL_DURATION_STAL = LS.stalwartShellRecoil / 100f;
 
             return orig(self, impactSide, spawnDamageEffect, damageAmount);
         }
         #endregion
-        #region Baldur Shell
+        #region Baldur Shell Changes
+        private void OnBeginRecoilAction(On.BeginRecoil.orig_OnEnter orig, BeginRecoil self)
+        {
+            if (self.Fsm.GameObject.name.Contains("Hit ") && self.Fsm.Name == "push_enemy" && self.State.Name == "Send Event")
+            {
+                self.attackMagnitude = LS.baldurShellKnockback;
+            }
+            orig(self);
+        }
+        private void OnPDMaxHealth(On.PlayerData.orig_MaxHealth orig, PlayerData self)
+        {
+            orig(self);
+
+            self.blockerHits = LS.baldurShellBlocks;
+            var BaldurShellFSM = HeroController.instance.gameObject.transform.Find("Charm Effects/Blocker Shield").gameObject.LocateMyFSM("Control");
+            BaldurShellFSM.ChangeFsmTransition("HUD Icon Up", "FINISHED",
+                (LS.baldurShellBlocks == 4) ? "Equipped" :
+                (LS.baldurShellBlocks == 3) ? "HUD 3" :
+                (LS.baldurShellBlocks == 2) ? "HUD 2" :
+                (LS.baldurShellBlocks == 1) ? "HUD 1" :
+                "Break");
+        }
+        #endregion
+        #region Fury of the Fallen Changes
+        private void OnIntCompareAction(On.HutongGames.PlayMaker.Actions.IntCompare.orig_OnEnter orig, IntCompare self)
+        {
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Fury" && self.State.Name == "Check HP")
+            {
+                self.integer2 = LS.furyOfTheFallenHealth;
+                self.lessThan = FsmEvent.GetFsmEvent("FURY");
+            }
+
+            orig(self);
+        }
+        private void OnBoolAllTrueAction(On.HutongGames.PlayMaker.Actions.BoolAllTrue.orig_OnEnter orig, BoolAllTrue self)
+        {
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Fury" && self.State.Name == "Check HP")
+            {
+                self.sendEvent = (LS.furyOfTheFallenJonis) ? null : FsmEvent.GetFsmEvent("CANCEL");
+            }
+
+            orig(self);
+        }
 
         #endregion
     }
+
     public class LocalSettings
     {
         #region Grubsong Settings
+        [SliderIntElement("Grubsong Options", "Soul", 0, 100)]
         public int grubsongDamageSoul = 15;
+
+        [SliderIntElement("Grubsong Options", "Grubberfly's Soul", 0, 100)]
         public int grubsongDamageSoulCombo = 25;
+
+        [SliderIntElement("Grubsong Options", "Weaversong Song", 0, 100)]
         public int grubsongWeaversongSoul = 3;
-        public bool grubsongComboBool = true;
+
+        [ButtonElement("Grubsong Options", "Reset Defaults", "")]
+        public void ResetGrubsong()
+        {
+            grubsongDamageSoul = 15;
+            grubsongDamageSoulCombo = 25;
+            grubsongWeaversongSoul = 3;
+        }
         #endregion
         #region Stalwart Shell Settings
-        public float stalwartShellInvulnerability = 35f;
-        public float stalwartShellRecoil = 20f;
+        [SliderIntElement("Stalwart Shell Options", "Invul Time (hundreths)", 0, 200)]
+        public int stalwartShellInvulnerability = 175;
+
+        [SliderIntElement("Stalwart Shell Options", "Recoil Time (hundreths)", 0, 100)]
+        public int stalwartShellRecoil = 8;
+
+        [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
+        public void ResetStalwartShell()
+        {
+            stalwartShellInvulnerability = 175;
+            stalwartShellRecoil = 8;
+        }
+
         #endregion
         #region Baldur Shell Settings
+        [SliderFloatElement("Baldur Shell Options", "Enemy Knockback", 0f, 10f)]
+        public float baldurShellKnockback = 2f;
 
+        [SliderIntElement("Baldur Shell Options", "Blocks", 0, 4)]
+        public int baldurShellBlocks = 4;
+
+        [ButtonElement("Baldur Shell Options", "Reset Defaults", "")]
+        public void ResetBaldurShell()
+        {
+            baldurShellKnockback = 2f;
+            baldurShellBlocks = 4;
+        }
+        #endregion
+        #region Fury of the Fallen Settings
+        [SliderIntElement("Fury of the Fallen Options", "Maximum Health", 0, 13)]
+        public int furyOfTheFallenHealth = 1;
+
+        [BoolElement("Fury of the Fallen Options", "Works with Joni's", "")]
+        public bool furyOfTheFallenJonis = false;
+
+        [ButtonElement("Fury of the Fallen Options", "Reset Defaults", "")]
+        public void ResetFuryOfTheFallen()
+        {
+            furyOfTheFallenHealth = 1;
+            furyOfTheFallenJonis = false;
+        }
         #endregion
     }
 }
