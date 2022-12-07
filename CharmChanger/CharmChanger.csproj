@@ -325,6 +325,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include=".gitignore" />
     <None Include="LocalOverrides.targets" />
   </ItemGroup>
