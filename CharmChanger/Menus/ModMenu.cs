@@ -27,7 +27,44 @@ public static class ModMenu
         //create the main menu
         MenuRef = new Menu("Charm Changer Options", new Element[]
         {
-            //you can add any elements you want here that will appear before the menu buttons
+            new MenuButton(
+                "Reset Defaults",
+                "Resets ALL settings to default values",
+                submitAction =>
+                {
+                    CharmChangerMod.LS.ResetGrubsong();
+                    CharmChangerMod.LS.ResetStalwartShell();
+                    CharmChangerMod.LS.ResetBaldurShell();
+                    CharmChangerMod.LS.ResetFuryOfTheFallen();
+                    CharmChangerMod.LS.ResetQuickAndDeepFocus();
+                    CharmChangerMod.LS.ResetLifebloodHeartAndCore();
+                    CharmChangerMod.LS.ResetDefendersCrest();
+                    CharmChangerMod.LS.ResetFlukenest();
+                    CharmChangerMod.LS.ResetThornsOfAgony();
+                    CharmChangerMod.LS.ResetLongnailAndMarkOfPride();
+                    CharmChangerMod.LS.ResetHeavyBlow();
+                    CharmChangerMod.LS.ResetSharpShadow();
+                    CharmChangerMod.LS.ResetSporeShroom();
+                    CharmChangerMod.LS.ResetShamanStone();
+                    CharmChangerMod.LS.ResetSoulCatcherAndEater();
+                    CharmChangerMod.LS.ResetGlowingWomb();
+                    CharmChangerMod.LS.ResetFragileCharms();
+                    CharmChangerMod.LS.ResetNailmastersGlory();
+                    CharmChangerMod.LS.ResetJonisBlessing();
+                    CharmChangerMod.LS.ResetShapeOfUnn();
+                    CharmChangerMod.LS.ResetHiveblood();
+                    CharmChangerMod.LS.ResetDreamWielder();
+                    CharmChangerMod.LS.ResetDashmaster();
+                    CharmChangerMod.LS.ResetQuickSlash();
+                    CharmChangerMod.LS.ResetSpellTwister();
+                    CharmChangerMod.LS.ResetGrubberflysElegy();
+                    CharmChangerMod.LS.ResetKingsoul();
+                    CharmChangerMod.LS.ResetSprintmaster();
+                    CharmChangerMod.LS.ResetDreamshield();
+                    CharmChangerMod.LS.ResetWeaversong();
+                    CharmChangerMod.LS.ResetGrimmchild();
+                    CharmChangerMod.LS.ResetCarefreeMelody();
+                })
         });
 
         // key: menu name, value: list of fields 
