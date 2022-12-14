@@ -180,6 +180,8 @@ namespace CharmChanger
             On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter += WeaversongDamageAndGrubsongSoul;
             On.HutongGames.PlayMaker.Actions.RandomFloat.OnEnter += WeaversongSpeeds;
             On.HutongGames.PlayMaker.Actions.SetFloatValue.OnEnter += WeaversongSprintmasterSpeed;
+            On.HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPool.OnEnter += WeaverlingSpawnLimit;
+            On.PlayMakerFSM.OnEnable += WeaverlingSpawner;
             #endregion
             #region Grimmchild Init
             On.HutongGames.PlayMaker.Actions.SetFloatValue.OnEnter += GrimmchildAttackTimer;
@@ -813,11 +815,8 @@ namespace CharmChanger
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
 
-            cursor.TryGotoNext(
-                MoveType.After,
-                i => i.MatchLdfld<HeroController>("DASH_SPEED_SHARP")
-                );
-            //cursor.GotoNext();
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("DASH_SPEED_SHARP"));
+            cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(Speed => LS.SharpShadowDashSpeed);
         }
         #endregion
@@ -1419,7 +1418,41 @@ namespace CharmChanger
 
             orig(self);
         }
+        private void WeaverlingSpawner(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
+        {
+            orig(self);
 
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Weaverling Control")
+            {
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 1));
+
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 3));
+
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 5));
+
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 1));
+
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 3));
+
+                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
+                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 5));
+            }
+        }
+
+        private void WeaverlingSpawnLimit(On.HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPool.orig_OnEnter orig, SpawnObjectFromGlobalPool self)
+        {
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Weaverling Control" && self.State.Name == "Spawn" && self.State.ActiveActionIndex > 1)
+            {
+                self.gameObject.Value = (self.State.ActiveActionIndex > ((2 * LS.weaversongCount) - 1)) ? null : self.Fsm.GetFsmGameObject("Weaverling").Value;
+            }
+
+            orig(self);
+        }
         #endregion
         #region Grimmchild Changes
         private void GrimmchildDamage(On.HutongGames.PlayMaker.Actions.SetIntValue.orig_OnEnter orig, SetIntValue self)
@@ -1531,7 +1564,6 @@ namespace CharmChanger
             stalwartShellInvulnerability = 175;
             stalwartShellRecoil = 8;
         }
-
         #endregion
         #region Baldur Shell Settings
         [SliderFloatElement("Baldur Shell Options", "Enemy Knockback", 0f, 10f)]
@@ -1606,7 +1638,7 @@ namespace CharmChanger
 
         [SliderFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
         public float defendersCrestCloudDuration = 1.1f;
-        
+
         [SliderIntElement("Defender's Crest Options", "Tick Rate (1000ths)", 10, 300)]
         public int defendersCrestDamageRate = 300;
 
@@ -1620,7 +1652,6 @@ namespace CharmChanger
         }
         #endregion
         #region Flukenest Settings
-
         [SliderIntElement("Flukenest Options", "Damage", 0, 20)]
         public int flukenestDamage = 4;
 
@@ -1671,7 +1702,7 @@ namespace CharmChanger
         }
         #endregion
         #region Thorns of Agony Settings
-        [SliderFloatElement("Thorns of Agony Options", "Damage (Nail * X)", 0f, 5f)]
+        [SliderFloatElement("Thorns of Agony Options", "Damage Mulitplier", 0f, 5f)]
         public float thornsOfAgonyDamageMultiplier = 1.0f;
 
         [ButtonElement("Thorns of Agony Options", "Reset Defaults", "")]
@@ -1701,7 +1732,6 @@ namespace CharmChanger
             markOfPrideScale = 125;
             longnailScale = 115;            
         }
-
         #endregion
         #region Heavy Blow Settings
         [BoolElement("Heavy Blow Options", "Works with Wall Slash", "")]
@@ -1738,7 +1768,7 @@ namespace CharmChanger
         }
         #endregion
         #region Sharp Shadow Settings
-        [SliderFloatElement("Sharp Shadow Options", "Damage (Nail * X)", 0f, 5f)]
+        [SliderFloatElement("Sharp Shadow Options", "Damage Multiplier", 0f, 5f)]
         public float SharpShadowDamageMultiplier = 1.0f;
 
         [SliderIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 300)]
@@ -1896,16 +1926,16 @@ namespace CharmChanger
         }
         #endregion
         #region Fragile Charms Settings
-        [BoolElement("Fragile/Unbreakable Charm Options", "Fragiles Break On Death", "")]
+        [BoolElement("Fragile/Unbreakable Charms Options", "Fragiles Break On Death", "")]
         public bool fragileCharmsBreak = true;
 
-        [SliderIntElement("Fragile/Unbreakable Charm Options", "Greed Geo Increase (%)", 0, 100)]
+        [SliderIntElement("Fragile/Unbreakable Charms Options", "Greed Geo Increase (%)", 0, 100)]
         public int greedGeoIncrease = 20;
 
-        [SliderIntElement("Fragile/Unbreakable Charm Options", "Strength Increase (%)", 0, 300)]
+        [SliderIntElement("Fragile/Unbreakable Charms Options", "Strength Increase (%)", 0, 300)]
         public int strengthDamageIncrease = 50;
 
-        [ButtonElement("Fragile/Unbreakable Charm Options", "Reset Defaults", "")]
+        [ButtonElement("Fragile/Unbreakable Charms Options", "Reset Defaults", "")]
         public void ResetFragileCharms()
         {
             fragileCharmsBreak = true;
@@ -2021,7 +2051,7 @@ namespace CharmChanger
         [BoolElement("Grubberfly's Elegy Options", "Ends with Joni's On Damage", "Does taking damage with Joni's Blessing equipped end the effects of Grubberfly's Elegy?")]
         public bool grubberflysElegyJoniBeamDamageBool = true;
 
-        [SliderFloatElement("Grubberfly's Elegy Options", "Damage (Nail * X)", 0, 5f)]
+        [SliderFloatElement("Grubberfly's Elegy Options", "Damage Multiplier", 0, 5f)]
         public float grubberflysElegyDamageScale = 0.5f;
 
         [SliderIntElement("Grubberfly's Elegy Options", "FotF Increase (%)", 0, 150)]
@@ -2071,7 +2101,7 @@ namespace CharmChanger
         [BoolElement("Dreamshield Options", "Makes Noise On Nail Slash", "")]
         public bool dreamshieldNoise = true;
 
-        [SliderFloatElement("Dreamshield Options", "Damage (Nail * X)", 0, 5f)]
+        [SliderFloatElement("Dreamshield Options", "Damage Multiplier", 0, 5f)]
         public float dreamshieldDamageScale = 1.0f;
 
         [SliderFloatElement("Dreamshield Options", "Shield Reformation Time", 0f, 10f)]
@@ -2102,6 +2132,9 @@ namespace CharmChanger
         }
         #endregion
         #region Weaversong Settings
+        [SliderIntElement("Weaversong Options", "Weaverling Total", 1, 9)]
+        public int weaversongCount = 3;
+
         [SliderIntElement("Weaversong Options", "Damage", 0, 15)]
         public int weaversongDamage = 3;
 
@@ -2120,6 +2153,7 @@ namespace CharmChanger
         [ButtonElement("Weaversong Options", "Reset Defaults", "")]
         public void ResetWeaversong()
         {
+            weaversongCount = 3;
             weaversongSpeedMin = 6f;
             weaversongSpeedMax = 10f;
             weaversongSpeedSprintmaster = 50;
