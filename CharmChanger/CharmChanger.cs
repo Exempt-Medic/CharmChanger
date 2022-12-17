@@ -51,6 +51,10 @@ namespace CharmChanger
         {
             Log("Initializing");
 
+            #region General Init
+            On.GameManager.CalculateNotchesUsed += ChangeNotchCosts;
+            #endregion
+
             #region Grubsong Init
             On.HeroController.TakeDamage += GrubsongSoulChanges;
             #endregion
@@ -263,6 +267,52 @@ namespace CharmChanger
         private ILHook? ilHCTakeDamage;
         #endregion
 
+        #region Notch Cost Changes
+        private void ChangeNotchCosts(On.GameManager.orig_CalculateNotchesUsed orig, GameManager self)
+        {
+            PlayerData.instance.SetInt("charmCost_1", LS.charm1NotchCost);
+            PlayerData.instance.SetInt("charmCost_2", LS.charm2NotchCost);
+            PlayerData.instance.SetInt("charmCost_3", LS.charm3NotchCost);
+            PlayerData.instance.SetInt("charmCost_4", LS.charm4NotchCost);
+            PlayerData.instance.SetInt("charmCost_5", LS.charm5NotchCost);
+            PlayerData.instance.SetInt("charmCost_6", LS.charm6NotchCost);
+            PlayerData.instance.SetInt("charmCost_7", LS.charm7NotchCost);
+            PlayerData.instance.SetInt("charmCost_8", LS.charm8NotchCost);
+            PlayerData.instance.SetInt("charmCost_9", LS.charm9NotchCost);
+            PlayerData.instance.SetInt("charmCost_10", LS.charm10NotchCost);
+            PlayerData.instance.SetInt("charmCost_11", LS.charm11NotchCost);
+            PlayerData.instance.SetInt("charmCost_12", LS.charm12NotchCost);
+            PlayerData.instance.SetInt("charmCost_13", LS.charm13NotchCost);
+            PlayerData.instance.SetInt("charmCost_14", LS.charm14NotchCost);
+            PlayerData.instance.SetInt("charmCost_15", LS.charm15NotchCost);
+            PlayerData.instance.SetInt("charmCost_16", LS.charm16NotchCost);
+            PlayerData.instance.SetInt("charmCost_17", LS.charm17NotchCost);
+            PlayerData.instance.SetInt("charmCost_18", LS.charm18NotchCost);
+            PlayerData.instance.SetInt("charmCost_19", LS.charm19NotchCost);
+            PlayerData.instance.SetInt("charmCost_20", LS.charm20NotchCost);
+            PlayerData.instance.SetInt("charmCost_21", LS.charm21NotchCost);
+            PlayerData.instance.SetInt("charmCost_22", LS.charm22NotchCost);
+            PlayerData.instance.SetInt("charmCost_23", LS.charm23NotchCost);
+            PlayerData.instance.SetInt("charmCost_24", LS.charm24NotchCost);
+            PlayerData.instance.SetInt("charmCost_25", LS.charm25NotchCost);
+            PlayerData.instance.SetInt("charmCost_26", LS.charm26NotchCost);
+            PlayerData.instance.SetInt("charmCost_27", LS.charm27NotchCost);
+            PlayerData.instance.SetInt("charmCost_28", LS.charm28NotchCost);
+            PlayerData.instance.SetInt("charmCost_29", LS.charm29NotchCost);
+            PlayerData.instance.SetInt("charmCost_30", LS.charm30NotchCost);
+            PlayerData.instance.SetInt("charmCost_31", LS.charm31NotchCost);
+            PlayerData.instance.SetInt("charmCost_32", LS.charm32NotchCost);
+            PlayerData.instance.SetInt("charmCost_33", LS.charm33NotchCost);
+            PlayerData.instance.SetInt("charmCost_34", LS.charm34NotchCost);
+            PlayerData.instance.SetInt("charmCost_35", LS.charm35NotchCost);
+            PlayerData.instance.SetInt("charmCost_36", LS.charm36NotchCost);
+            PlayerData.instance.SetInt("charmCost_37", LS.charm37NotchCost);
+            PlayerData.instance.SetInt("charmCost_38", LS.charm38NotchCost);
+            PlayerData.instance.SetInt("charmCost_39", LS.charm39NotchCost);
+            PlayerData.instance.SetInt("charmCost_40", LS.charm40NotchCost);
+        }
+        #endregion
+
         #region Grubsong Changes
         private void GrubsongSoulChanges(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
         {
@@ -290,7 +340,7 @@ namespace CharmChanger
         {
             if (self.Fsm.GameObject.name.Contains("Hit ") && self.Fsm.Name == "push_enemy" && self.State.Name == "Send Event")
             {
-                self.attackMagnitude = LS.baldurShellKnockback;
+                self.attackMagnitude = 2f * LS.baldurShellKnockbackMult;
             }
             orig(self);
         }
@@ -447,7 +497,7 @@ namespace CharmChanger
                 self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.defendersCrestCloudDuration;
 
                 // Damage Rate
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.defendersCrestDamageRate / 1000f;
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.defendersCrestDamageRate / 100f;
             }
 
             orig(self);
@@ -1537,11 +1587,180 @@ namespace CharmChanger
 
     public class LocalSettings
     {
+        #region Notch Cost Settings
+        [SliderIntElement("Notch Cost Options", "Gathering Swarm", 0, 12)]
+        public int charm1NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Wayward Compass", 0, 12)]
+        public int charm2NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Grubsong", 0, 12)]
+        public int charm3NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Stalwart Shell", 0, 12)]
+        public int charm4NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Baldur Shell", 0, 12)]
+        public int charm5NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Fury of the Fallen", 0, 12)]
+        public int charm6NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Quick Focus", 0, 12)]
+        public int charm7NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Lifeblood Heart", 0, 12)]
+        public int charm8NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Lifeblood Core", 0, 12)]
+        public int charm9NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Defender's Crest", 0, 12)]
+        public int charm10NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Flukenest", 0, 12)]
+        public int charm11NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Thorns of Agony", 0, 12)]
+        public int charm12NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Mark of Pride", 0, 12)]
+        public int charm13NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Steady Body", 0, 12)]
+        public int charm14NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Heavy Blow", 0, 12)]
+        public int charm15NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Sharp Shadow", 0, 12)]
+        public int charm16NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Spore Shroom", 0, 12)]
+        public int charm17NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Longnail", 0, 12)]
+        public int charm18NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Shaman Stone", 0, 12)]
+        public int charm19NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Soul Catcher", 0, 12)]
+        public int charm20NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Soul Eater", 0, 12)]
+        public int charm21NotchCost = 4;
+
+        [SliderIntElement("Notch Cost Options", "Glowing Womb", 0, 12)]
+        public int charm22NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Fragile Heart", 0, 12)]
+        public int charm23NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Fragile Greed", 0, 12)]
+        public int charm24NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Fragile Strength", 0, 12)]
+        public int charm25NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Nailmaster's Glory", 0, 12)]
+        public int charm26NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Joni's Blessing", 0, 12)]
+        public int charm27NotchCost = 4;
+
+        [SliderIntElement("Notch Cost Options", "Shape of Unn", 0, 12)]
+        public int charm28NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Hiveblood", 0, 12)]
+        public int charm29NotchCost = 4;
+
+        [SliderIntElement("Notch Cost Options", "Dream Wielder", 0, 12)]
+        public int charm30NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Dashmaster", 0, 12)]
+        public int charm31NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Quick Slash", 0, 12)]
+        public int charm32NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Spell Twister", 0, 12)]
+        public int charm33NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Deep Focus", 0, 12)]
+        public int charm34NotchCost = 4;
+
+        [SliderIntElement("Notch Cost Options", "Grubberfly's Elegy", 0, 12)]
+        public int charm35NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Kingsoul / Void Heart", 0, 12)]
+        public int charm36NotchCost = 5;
+
+        [SliderIntElement("Notch Cost Options", "Sprintmaster", 0, 12)]
+        public int charm37NotchCost = 1;
+
+        [SliderIntElement("Notch Cost Options", "Dreamshield", 0, 12)]
+        public int charm38NotchCost = 3;
+
+        [SliderIntElement("Notch Cost Options", "Weaversong", 0, 12)]
+        public int charm39NotchCost = 2;
+
+        [SliderIntElement("Notch Cost Options", "Grimmchild / Carefree", 0, 12)]
+        public int charm40NotchCost = 2;
+
+        [ButtonElement("Notch Cost Options", "Reset Defaults", "")]
+        public void ResetNotchCosts()
+        {
+            charm1NotchCost = 1;
+            charm2NotchCost = 1;
+            charm3NotchCost = 1;
+            charm4NotchCost = 2;
+            charm5NotchCost = 2;
+            charm6NotchCost = 2;
+            charm7NotchCost = 3;
+            charm8NotchCost = 2;
+            charm9NotchCost = 3;
+            charm10NotchCost = 1;
+            charm11NotchCost = 3;
+            charm12NotchCost = 1;
+            charm13NotchCost = 3;
+            charm14NotchCost = 1;
+            charm15NotchCost = 2;
+            charm16NotchCost = 2;
+            charm17NotchCost = 1;
+            charm18NotchCost = 2;
+            charm19NotchCost = 3;
+            charm20NotchCost = 2;
+            charm21NotchCost = 4;
+            charm22NotchCost = 2;
+            charm23NotchCost = 2;
+            charm24NotchCost = 2;
+            charm25NotchCost = 3;
+            charm26NotchCost = 1;
+            charm27NotchCost = 4;
+            charm28NotchCost = 2;
+            charm29NotchCost = 4;
+            charm30NotchCost = 1;
+            charm31NotchCost = 2;
+            charm32NotchCost = 3;
+            charm33NotchCost = 2;
+            charm34NotchCost = 4;
+            charm35NotchCost = 3;
+            charm36NotchCost = 5;
+            charm37NotchCost = 1;
+            charm38NotchCost = 3;
+            charm39NotchCost = 2;
+            charm40NotchCost = 2;
+
+            PlayerData.instance.charmSlotsFilled = 0;
+        }
+        #endregion
+
         #region Grubsong Settings
-        [SliderIntElement("Grubsong Options", "Soul", 0, 199)]
+        [InputIntElement("Grubsong Options", "Soul3", 0, 198)]
         public int grubsongDamageSoul = 15;
 
-        [SliderIntElement("Grubsong Options", "Grubberfly's Soul", 0, 199)]
+        [InputIntElement("Grubsong Options", "Grubberfly's Soul", 0, 198)]
         public int grubsongDamageSoulCombo = 25;
 
         [ButtonElement("Grubsong Options", "Reset Defaults", "")]
@@ -1555,7 +1774,7 @@ namespace CharmChanger
         [SliderIntElement("Stalwart Shell Options", "Invul Time (100ths)", 0, 350)]
         public int stalwartShellInvulnerability = 175;
 
-        [SliderIntElement("Stalwart Shell Options", "Recoil Time (100ths)", 0, 100)]
+        [SliderIntElement("Stalwart Shell Options", "Recoil Time (100ths)", 0, 20)]
         public int stalwartShellRecoil = 8;
 
         [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
@@ -1566,8 +1785,8 @@ namespace CharmChanger
         }
         #endregion
         #region Baldur Shell Settings
-        [SliderFloatElement("Baldur Shell Options", "Enemy Knockback", 0f, 10f)]
-        public float baldurShellKnockback = 2f;
+        [SliderFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 5f)]
+        public float baldurShellKnockbackMult = 1.0f;
 
         [SliderIntElement("Baldur Shell Options", "Blocks", 0, 4)]
         public int baldurShellBlocks = 4;
@@ -1575,7 +1794,7 @@ namespace CharmChanger
         [ButtonElement("Baldur Shell Options", "Reset Defaults", "")]
         public void ResetBaldurShell()
         {
-            baldurShellKnockback = 2f;
+            baldurShellKnockbackMult = 1.0f;
             baldurShellBlocks = 4;
         }
         #endregion
@@ -1583,10 +1802,10 @@ namespace CharmChanger
         [BoolElement("Fury of the Fallen Options", "Works With Joni's Blessing", "Should FotF work with Joni's Blessing at any Health?")]
         public bool furyOfTheFallenJonis = false;
 
-        [SliderIntElement("Fury of the Fallen Options", "Health Threshold", 0, 13)]
+        [SliderIntElement("Fury of the Fallen Options", "Health Threshold", 1, 13)]
         public int furyOfTheFallenHealth = 1;
 
-        [SliderIntElement("Fury of the Fallen Options", "Damage Increase (%)", 0, 150)]
+        [SliderIntElement("Fury of the Fallen Options", "Damage Increase (%)", 0, 300)]
         public int furyOfTheFallenScaling = 75;
 
         [ButtonElement("Fury of the Fallen Options", "Reset Defaults", "")]
@@ -1598,7 +1817,7 @@ namespace CharmChanger
         }
         #endregion
         #region Quick/Deep Focus Settings
-        [SliderIntElement("Quick/Deep Focus Options", "Focus Time (1000ths)", 45, 891)]
+        [SliderIntElement("Quick/Deep Focus Options", "Quick Focus Time (1000ths)", 45, 891)]
         public int quickFocusFocusTime = 594;
 
         [SliderIntElement("Quick/Deep Focus Options", "Deep Focus Added Time (%)", 0, 300)]
@@ -1633,14 +1852,14 @@ namespace CharmChanger
         [SliderIntElement("Defender's Crest Options", "Shop Discount (%)", 0, 100)]
         public int defendersCrestDiscount = 20;
 
-        [SliderIntElement("Defender's Crest Options", "Cloud Frequency (100ths)", 20, 150)]
+        [SliderIntElement("Defender's Crest Options", "Cloud Spawn Rate (100ths)", 20, 300)]
         public int defendersCrestCloudFrequency = 75;
 
         [SliderFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
         public float defendersCrestCloudDuration = 1.1f;
 
-        [SliderIntElement("Defender's Crest Options", "Tick Rate (1000ths)", 10, 300)]
-        public int defendersCrestDamageRate = 300;
+        [SliderIntElement("Defender's Crest Options", "Tick Rate (100ths)", 1, 30)]
+        public int defendersCrestDamageRate = 30;
 
         [ButtonElement("Defender's Crest Options", "Reset Defaults", "")]
         public void ResetDefendersCrest()
@@ -1648,7 +1867,7 @@ namespace CharmChanger
             defendersCrestDiscount = 20;
             defendersCrestCloudDuration = 1.1f;
             defendersCrestCloudFrequency = 75;
-            defendersCrestDamageRate = 300;
+            defendersCrestDamageRate = 30;
         }
         #endregion
         #region Flukenest Settings
@@ -1682,7 +1901,7 @@ namespace CharmChanger
         [SliderIntElement("Flukenest Options", "DC Tick Rate (1000ths)", 10, 100)]
         public int flukenestDefendersCrestDamageRate = 100;
 
-        [SliderIntElement("Flukenest Options", "DC + SS Tick Rate (1000ths)", 0, 75)]
+        [SliderIntElement("Flukenest Options", "DC + SS Tick Rate (1000ths)", 10, 500)]
         public int flukenestDefendersCrestShamanStoneDamageRate = 75;
 
         [ButtonElement("Flukenest Options", "Reset Defaults", "")]
@@ -1866,16 +2085,16 @@ namespace CharmChanger
         }
         #endregion
         #region Soul Catcher/Eater Settings
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 199)]
+        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 198)]
         public int soulCatcherSoul = 3;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 199)]
+        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
         public int soulEaterSoul = 8;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 199)]
+        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 198)]
         public int soulCatcherReservesSoul = 2;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Vessel Soul", 0, 199)]
+        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Vessel Soul", 0, 198)]
         public int soulEaterReservesSoul = 6;
 
         [ButtonElement("Soul Catcher/Eater Options", "Reset Defaults", "")]
@@ -1891,7 +2110,7 @@ namespace CharmChanger
         [SliderFloatElement("Glowing Womb Options", "Spawn Time", 0f, 16f)]
         public float glowingWombSpawnRate = 4f;
 
-        [SliderIntElement("Glowing Womb Options", "Spawn Cost", 0, 199)]
+        [SliderIntElement("Glowing Womb Options", "Spawn Cost", 0, 198)]
         public int glowingWombSpawnCost = 8;
 
         [SliderIntElement("Glowing Womb Options", "Spawn Maximum", 0, 12)]
@@ -2070,7 +2289,7 @@ namespace CharmChanger
         }
         #endregion
         #region Kingsoul Settings
-        [SliderIntElement("Kingsoul Options", "Soul Gained", 0, 199)]
+        [SliderIntElement("Kingsoul Options", "Soul Gained", 0, 198)]
         public int kingsoulSoulGain = 4;
 
         [SliderFloatElement("Kingsoul Options", "Soul Timer", 0f, 10f)]
@@ -2147,7 +2366,7 @@ namespace CharmChanger
         [SliderIntElement("Weaversong Options", "Sprintmaster Increase (%)", 0, 150)]
         public int weaversongSpeedSprintmaster = 50;
 
-        [SliderIntElement("Weaversong Options", "Grubsong Soul", 0, 199)]
+        [SliderIntElement("Weaversong Options", "Grubsong Soul", 0, 198)]
         public int weaversongGrubsongSoul = 3;
 
         [ButtonElement("Weaversong Options", "Reset Defaults", "")]
