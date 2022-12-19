@@ -4,6 +4,10 @@ using System.Reflection;
 using Satchel.BetterMenus;
 using Modding;
 using UnityEngine;
+using UnityEngine.UI;
+using MenuButton = Satchel.BetterMenus.MenuButton;
+using InputField = Satchel.BetterMenus.InputField;
+using UnityEngine.UIElements;
 
 namespace CharmChanger;
 public static class ModMenu
@@ -126,17 +130,24 @@ public static class ModMenu
                         var info = field.GetCustomAttribute<ModMenuElementAttribute>();
                         if (info is SliderFloatElementAttribute sliderInfo)
                         {
-                            extraMenu.AddElement(new CustomSlider(
+                            var slider = new CustomSlider(
                                 sliderInfo.ElementName,
                                 f => { field.SetValue(Settings, f); },
                                 () => (float)field.GetValue(Settings),
                                 sliderInfo.MinValue,
                                 sliderInfo.MaxValue,
-                                false));
+                                false);
+
+                            extraMenu.AddElement(slider);
+
+                            slider.OnBuilt += () =>
+                            {
+                                slider.gameObject.transform.GetChild(0).Find("Label").GetComponent<Text>().fontSize = 36;
+                            };
                         }
                         else if (info is InputFloatElementAttribute inputInfo)
                         {
-                            extraMenu.AddElement(Blueprints.FloatInputField(
+                            var input = Blueprints.FloatInputField(
                                 inputInfo.ElementName,
                                 f =>
                                 {
@@ -153,7 +164,14 @@ public static class ModMenu
                                 inputInfo.PlaceHolder,
                                 inputInfo.CharacterLimit,
                                 Id: inputInfo.ElementName
-                            ));
+                            );
+
+                            extraMenu.AddElement(input);
+
+                            input.OnBuilt += () =>
+                            {
+                                input.gameObject.transform.GetChild(0).Find("Label").GetComponent<Text>().fontSize = 38;
+                            };
                         }
                         else
                         {
@@ -165,17 +183,24 @@ public static class ModMenu
                         var info = field.GetCustomAttribute<ModMenuElementAttribute>();
                         if (info is SliderIntElementAttribute sliderInfo)
                         {
-                            extraMenu.AddElement(new CustomSlider(
+                            var slider = new CustomSlider(
                                 sliderInfo.ElementName,
                                 f => { field.SetValue(Settings, (int)f); },
                                 () => (int)field.GetValue(Settings),
                                 sliderInfo.MinValue,
                                 sliderInfo.MaxValue,
-                                true));
+                                true);
+
+                            extraMenu.AddElement(slider);
+
+                            slider.OnBuilt += () =>
+                            {
+                                slider.gameObject.transform.GetChild(0).Find("Label").GetComponent<Text>().fontSize = 38;
+                            };
                         }
                         else if (info is InputIntElementAttribute inputInfo)
                         {
-                            extraMenu.AddElement(Blueprints.IntInputField(
+                            var input = Blueprints.IntInputField(
                                 inputInfo.ElementName,
                                 f =>
                                 {
@@ -192,7 +217,14 @@ public static class ModMenu
                                 inputInfo.PlaceHolder,
                                 inputInfo.CharacterLimit,
                                 Id: inputInfo.ElementName
-                            ));
+                            );
+
+                            extraMenu.AddElement(input);
+
+                            input.OnBuilt += () =>
+                            {
+                                input.gameObject.transform.GetChild(0).Find("Label").GetComponent<Text>().fontSize = 38;
+                            };
                         }
                         else
                         {
@@ -208,7 +240,8 @@ public static class ModMenu
                         }
                         else
                         {
-                            extraMenu.AddElement(Blueprints.HorizontalBoolOption(info.ElementName,
+                            extraMenu.AddElement(Blueprints.HorizontalBoolOption(
+                                info.ElementName,
                                 info.ElementDesc,
                                 (b) => field.SetValue(Settings, b),
                                 () => (bool)field.GetValue(Settings)));

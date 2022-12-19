@@ -9,6 +9,7 @@ using SFCore.Utils;
 using MonoMod.RuntimeDetour;
 using System.Reflection;
 using MonoMod.Cil;
+using Satchel;
 
 namespace CharmChanger
 {
@@ -184,7 +185,6 @@ namespace CharmChanger
             On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter += WeaversongDamageAndGrubsongSoul;
             On.HutongGames.PlayMaker.Actions.RandomFloat.OnEnter += WeaversongSpeeds;
             On.HutongGames.PlayMaker.Actions.SetFloatValue.OnEnter += WeaversongSprintmasterSpeed;
-            On.HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPool.OnEnter += WeaverlingSpawnLimit;
             On.PlayMakerFSM.OnEnable += WeaverlingSpawner;
             #endregion
             #region Grimmchild Init
@@ -1473,34 +1473,40 @@ namespace CharmChanger
 
             if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Weaverling Control")
             {
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 1));
+                SpawnObjectFromGlobalPool spawner = self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0);
+                SetAudioClip audio1 = self.GetFsmAction<SetAudioClip>("Spawn", 1);
+                SetAudioClip audio2 = self.GetFsmAction<SetAudioClip>("Spawn", 3);
+                SetAudioClip audio3 = self.GetFsmAction<SetAudioClip>("Spawn", 5);
 
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 3));
+                self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0).Enabled = false;
+                self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 2).Enabled = false;
+                self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 4).Enabled = false;
 
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 5));
+                self.GetFsmAction<SetAudioClip>("Spawn", 1).Enabled = false;
+                self.GetFsmAction<SetAudioClip>("Spawn", 3).Enabled = false;
+                self.GetFsmAction<SetAudioClip>("Spawn", 5).Enabled = false;
 
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 1));
+                self.AddCustomAction("Spawn", () =>
+                {
+                    for (int i = 1; i <= LS.weaversongCount; i++)
+                    {
+                        spawner.OnEnter();
 
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 3));
-
-                self.AddFsmAction("Spawn", self.GetFsmAction<SpawnObjectFromGlobalPool>("Spawn", 0));
-                self.AddFsmAction("Spawn", self.GetFsmAction<SetAudioClip>("Spawn", 5));
+                        if (i % 3 == 0)
+                        {
+                            audio1.OnEnter();
+                        }
+                        else if (i % 3 == 1)
+                        {
+                            audio2.OnEnter();
+                        }
+                        else
+                        {
+                            audio3.OnEnter();
+                        }
+                    }
+                });
             }
-        }
-
-        private void WeaverlingSpawnLimit(On.HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPool.orig_OnEnter orig, SpawnObjectFromGlobalPool self)
-        {
-            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Weaverling Control" && self.State.Name == "Spawn" && self.State.ActiveActionIndex > 1)
-            {
-                self.gameObject.Value = (self.State.ActiveActionIndex > ((2 * LS.weaversongCount) - 1)) ? null : self.Fsm.GetFsmGameObject("Weaverling").Value;
-            }
-
-            orig(self);
         }
         #endregion
         #region Grimmchild Changes
@@ -1819,7 +1825,7 @@ namespace CharmChanger
         [InputFloatElement("Quick/Deep Focus Options", "Quick Focus Time", 0.001f, 2f)]
         public float quickFocusFocusTime = 0.594f;
 
-        [InputIntElement("Quick/Deep Focus Options", "DF Added Time (%)", 0, 500)]
+        [InputIntElement("Quick/Deep Focus Options", "Deep Focus Added Time (%)", 0, 500)]
         public int deepFocusHealingTimeScale = 65;
 
         [SliderIntElement("Quick/Deep Focus Options", "Deep Focus Healing", 0, 13)]
@@ -1920,7 +1926,7 @@ namespace CharmChanger
         }
         #endregion
         #region Thorns of Agony Settings
-        [InputFloatElement("Thorns of Agony Options", "Damage Mulitplier", 0f, 5f)]
+        [InputFloatElement("Thorns of Agony Options", "Damage Multiplier", 0f, 5f)]
         public float thornsOfAgonyDamageMultiplier = 1.0f;
 
         [ButtonElement("Thorns of Agony Options", "Reset Defaults", "")]
@@ -1939,7 +1945,7 @@ namespace CharmChanger
         [InputIntElement("Longnail / Mark of Pride Options", "MoP Size Increase (%)", 0, 500)]
         public int markOfPrideScale = 25;
 
-        [InputIntElement("Longnail / Mark of Pride Options", "Longnail Increase (%)", 0, 500)]
+        [InputIntElement("Longnail / Mark of Pride Options", "Longnail Size Increase (%)", 0, 500)]
         public int longnailScale = 15;
 
         [ButtonElement("Longnail / Mark of Pride Options", "Reset Defaults", "")]
@@ -1964,7 +1970,7 @@ namespace CharmChanger
         [InputIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 1000)]
         public int heavyBlowGreatSlashRecoil = 33;
 
-        [InputIntElement("Heavy Blow Options", "Cyclone Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Cyclone Slash Increase (%)", 0, 1000)]
         public int heavyBlowCycloneSlashRecoil = 25;
 
         [SliderIntElement("Heavy Blow Options", "Stagger Reduction", 0, 20)]
@@ -1992,7 +1998,7 @@ namespace CharmChanger
         [InputIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 300)]
         public int SharpShadowDashmasterDamageIncrease = 50;
 
-        [InputFloatElement("Sharp Shadow Options", "Dash Speed", 0f, 75f)]
+        [InputFloatElement("Sharp Shadow Options", "Shadow Dash Speed", 0f, 75f)]
         public float SharpShadowDashSpeed = 28f;
 
         [ButtonElement("Sharp Shadow Options", "Reset Defaults", "")]
@@ -2112,7 +2118,7 @@ namespace CharmChanger
         [InputIntElement("Glowing Womb Options", "Spawn Cost", 0, 198)]
         public int glowingWombSpawnCost = 8;
 
-        [SliderIntElement("Glowing Womb Options", "Spawn Maximum", 0, 12)]
+        [InputIntElement("Glowing Womb Options", "Spawn Maximum", 0, 12)]
         public int glowingWombSpawnTotal = 4;
 
         [InputIntElement("Glowing Womb Options", "Impact Damage", 0, 100)]
@@ -2150,7 +2156,7 @@ namespace CharmChanger
         [InputIntElement("Fragile/Unbreakable Charms Options", "Greed Geo Increase (%)", 0, 500)]
         public int greedGeoIncrease = 20;
 
-        [InputIntElement("Fragile/Unbreakable Charms Options", "Strength Increase (%)", 0, 500)]
+        [InputIntElement("Fragile/Unbreakable Charms Options", "Strength Damage Increase (%)", 0, 500)]
         public int strengthDamageIncrease = 50;
 
         [ButtonElement("Fragile/Unbreakable Charms Options", "Reset Defaults", "")]
@@ -2199,7 +2205,7 @@ namespace CharmChanger
         [InputFloatElement("Hiveblood Options", "Recovery Time", 0f, 60f)]
         public float hivebloodTimer = 10f;
 
-        [InputFloatElement("Hiveblood Options", "Joni's Recovery Time", 0f, 60f)]
+        [InputFloatElement("Hiveblood Options", "Joni's Blessing Recovery Time", 0f, 60f)]
         public float hivebloodJonisTimer = 20f;
 
         [ButtonElement("Hiveblood Options", "Reset Defaults", "")]
@@ -2328,7 +2334,7 @@ namespace CharmChanger
         [InputFloatElement("Dreamshield Options", "Size Scale", 0f, 3f)]
         public float dreamshieldSizeScale = 1.0f;
 
-        [SliderFloatElement("Dreamshield Options", "Dream Wielder Size Scale", 0f, 3f)]
+        [InputFloatElement("Dreamshield Options", "Dream Wielder Size Scale", 0f, 3f)]
         public float dreamshieldDreamWielderSizeScale = 1.15f;
 
         [InputIntElement("Dreamshield Options", "Rotation Speed", 0, 1000)]
@@ -2350,7 +2356,7 @@ namespace CharmChanger
         }
         #endregion
         #region Weaversong Settings
-        [SliderIntElement("Weaversong Options", "Weaverling Total", 1, 9)]
+        [SliderIntElement("Weaversong Options", "Weaverling Total", 1, 12)]
         public int weaversongCount = 3;
 
         [InputIntElement("Weaversong Options", "Damage", 0, 100)]
