@@ -33,8 +33,8 @@ public static class ModMenu
         MenuRef = new Menu("Charm Changer Options", new Element[]
         {
             new MenuButton(
-                "Reset Defaults",
-                "Resets ALL settings to default values",
+                "Reset Defaults (remove charms first)",
+                "",
                 submitAction =>
                 {
                     CharmChangerMod.LS.ResetGrubsong();

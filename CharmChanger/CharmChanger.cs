@@ -162,10 +162,10 @@ namespace CharmChanger
             On.HutongGames.PlayMaker.Actions.SetFsmInt.OnEnter += SpellTwisterSpellCost;
             #endregion
             #region Grubberfly's Elegy Init
-            On.HeroController.Attack += GrubberflysElegyMarkOfPrideSizeScale;
             On.HeroController.TakeDamage += GrubberflysElegyJoniBeam;
             On.HutongGames.PlayMaker.Actions.FloatMultiply.OnEnter += GrubberflysElegyFotFScaling;
             On.HutongGames.PlayMaker.Actions.FloatOperator.OnEnter += GrubberflysElegyDamage;
+            ilHCAttackElegy = new ILHook(HCAttackElegy, GrubberflysSizeScale);
             #endregion
             #region Kingsoul Init
             On.HutongGames.PlayMaker.Actions.Wait.OnEnter += KingsoulTimer;
@@ -257,6 +257,10 @@ namespace CharmChanger
 
         private static readonly MethodInfo origDoAttack = typeof(HeroController).GetMethod("orig_DoAttack", BindingFlags.NonPublic | BindingFlags.Instance);
         private ILHook? ilOrigDoAttack;
+        #endregion
+        #region Grubberfly's Elegy IL Hooks
+        private static readonly MethodInfo HCAttackElegy = typeof(HeroController).GetMethod("Attack", BindingFlags.Public | BindingFlags.Instance);
+        private ILHook? ilHCAttackElegy;
         #endregion
         #region Sprintmaster IL Hooks
         private static readonly MethodInfo HCMove = typeof(HeroController).GetMethod("Move", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -493,8 +497,8 @@ namespace CharmChanger
             if (self.Fsm.GameObject.name == "Knight Dung Trail(Clone)" && self.Fsm.Name == "Control" && self.State.Name == "Wait")
             {
                 // Duration & Visuals
-                self.time.Value = LS.defendersCrestCloudDuration;
-                self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.defendersCrestCloudDuration;
+                //self.time.Value = LS.defendersCrestCloudDuration;
+                //self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.defendersCrestCloudDuration;
 
                 // Damage Rate
                 self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.defendersCrestDamageRate;
@@ -538,8 +542,8 @@ namespace CharmChanger
             if (self.Fsm.GameObject.name == "Knight Dung Cloud" && self.Fsm.Name == "Control" && self.State.Name == "Collider On")
             {
                 // Duration & Visuals
-                self.time.Value = LS.flukenestDefendersCrestDuration;
-                self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.flukenestDefendersCrestDuration;
+                //self.time.Value = LS.flukenestDefendersCrestDuration;
+                //self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.flukenestDefendersCrestDuration;
             }
 
             orig(self);
@@ -886,7 +890,7 @@ namespace CharmChanger
             else if (self.Fsm.GameObject.name == "Knight Dung Cloud(Clone)" && self.Fsm.Name == "Control" && self.State.Name == "Wait")
             {
                 // Duration
-                self.time.Value = LS.sporeShroomDefendersCrestCloudDuration;
+                //self.time.Value = LS.sporeShroomDefendersCrestCloudDuration;
 
                 // Damage Rate
                 self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.sporeShroomDefendersCrestDamageRate;
@@ -1032,10 +1036,8 @@ namespace CharmChanger
             // Glowing Womb Cloud
             if (self.Fsm.GameObject.name == "Dung Explosion(Clone)" && self.Fsm.Name == "Explosion Control" && self.State.Name == "Explode")
             {
-                // Duration
-                self.time.Value = LS.glowingWombDefendersCrestDuration;
-
-                // Visuals get too large over time
+                // Duration & Visuals
+                //self.time.Value = LS.glowingWombDefendersCrestDuration;
                 //self.Fsm.GameObject.transform.Find("Particle System").GetComponent<ParticleSystem>().startLifetime = LS.glowingWombDefendersCrestDuration;
 
                 // Damage Rate
@@ -1264,7 +1266,7 @@ namespace CharmChanger
             ILCursor cursor = new ILCursor(il).Goto(0);
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_DURATION_CH"));
             cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => LS.quickSlashAttackDuration);
+            cursor.EmitDelegate<Func<float, float>>(time => Mathf.Min(0.35f, LS.quickSlashAttackCooldown + 0.03f));
         }
         #endregion
         #region Spell Twister Changes
@@ -1280,11 +1282,15 @@ namespace CharmChanger
 
         #endregion
         #region Grubberfly's Elegy Changes
-        private void GrubberflysElegyMarkOfPrideSizeScale(On.HeroController.orig_Attack orig, HeroController self, AttackDirection attackDir)
+        private void GrubberflysSizeScale(ILContext il)
         {
-            ReflectionHelper.SetField<HeroController, float>(self, "MANTIS_CHARM_SCALE", 1f + (float)(LS.grubberflysElegyMarkOfPrideScale / 100f));
+            ILCursor cursor = new ILCursor(il).Goto(0);
 
-            orig(self, attackDir);
+            while(cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("MANTIS_CHARM_SCALE")))
+            {
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(scale => 1f + (float)(LS.grubberflysElegyMarkOfPrideScale / 100f));
+            }
         }
         private void GrubberflysElegyJoniBeam(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
         {
@@ -1713,7 +1719,7 @@ namespace CharmChanger
         [SliderIntElement("Notch Cost Options", "Grimmchild / Carefree", 0, 12)]
         public int charm40NotchCost = 2;
 
-        [ButtonElement("Notch Cost Options", "Reset Defaults", "")]
+        [ButtonElement("Notch Cost Options", "Reset Defaults (remove charms first)", "")]
         public void ResetNotchCosts()
         {
             charm1NotchCost = 1;
@@ -1762,7 +1768,7 @@ namespace CharmChanger
         #endregion
 
         #region Grubsong Settings
-        [InputIntElement("Grubsong Options", "Soul", 0, 198)]
+        [InputIntElement("Grubsong Options", "Soul", 0, 198, ElementDesc = "description goes here")]
         public int grubsongDamageSoul = 15;
 
         [InputIntElement("Grubsong Options", "Grubberfly's Soul", 0, 198)]
@@ -1860,8 +1866,8 @@ namespace CharmChanger
         [InputFloatElement("Defender's Crest Options", "Cloud Spawn Timer", 0.2f, 5f)]
         public float defendersCrestCloudFrequency = 0.75f;
 
-        [InputFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
-        public float defendersCrestCloudDuration = 1.1f;
+        //[InputFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
+        //public float defendersCrestCloudDuration = 1.1f;
 
         [InputFloatElement("Defender's Crest Options", "Damage Timer", 0.01f, 1f)]
         public float defendersCrestDamageRate = 0.3f;
@@ -1871,7 +1877,7 @@ namespace CharmChanger
         {
             defendersCrestDiscount = 20;
             defendersCrestCloudFrequency = 0.75f;
-            defendersCrestCloudDuration = 1.1f;
+            //defendersCrestCloudDuration = 1.1f;
             defendersCrestDamageRate = 0.3f;
         }
         #endregion
@@ -1900,8 +1906,8 @@ namespace CharmChanger
         [InputFloatElement("Flukenest Options", "SS Maximum Size Scale", 0f, 3f)]
         public float flukenestShamanStoneFlukeSizeMax = 1.2f;
 
-        [InputFloatElement("Flukenest Options", "DC Cloud Duration", 0f, 10f)]
-        public float flukenestDefendersCrestDuration = 2.2f;
+        //[InputFloatElement("Flukenest Options", "DC Cloud Duration", 0f, 10f)]
+        //public float flukenestDefendersCrestDuration = 2.2f;
 
         [InputFloatElement("Flukenest Options", "DC Damage Timer", 0.01f, 1f)]
         public float flukenestDefendersCrestDamageRate = 0.1f;
@@ -1920,7 +1926,7 @@ namespace CharmChanger
             flukenestShamanStoneFlukeSizeMax = 1.2f;
             flukenestVSFlukes = 9;
             flukenestSSFlukes = 16;
-            flukenestDefendersCrestDuration = 2.2f;
+            //flukenestDefendersCrestDuration = 2.2f;
             flukenestDefendersCrestDamageRate = 0.1f;
             flukenestDefendersCrestShamanStoneDamageRate = 0.075f;
         }
@@ -1995,7 +2001,7 @@ namespace CharmChanger
         [InputFloatElement("Sharp Shadow Options", "Damage Multiplier", 0f, 5f)]
         public float SharpShadowDamageMultiplier = 1.0f;
 
-        [InputIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 300)]
+        [InputIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 500)]
         public int SharpShadowDashmasterDamageIncrease = 50;
 
         [InputFloatElement("Sharp Shadow Options", "Shadow Dash Speed", 0f, 75f)]
@@ -2016,14 +2022,14 @@ namespace CharmChanger
         [InputFloatElement("Spore Shroom Options", "Cloud Cooldown", 0f, 20f)]
         public float sporeShroomCooldown = 4.25f;
 
-        [InputFloatElement("Spore Shroom Options", "Cloud Duration", 0f, 10f)]
+        [InputFloatElement("Spore Shroom Options", "Spore Cloud Duration", 0f, 10f)]
         public float sporeShroomCloudDuration = 4.1f;
 
         [InputFloatElement("Spore Shroom Options", "Damage Timer", 0.01f, 1f)]
         public float sporeShroomDamageRate = 0.15f;
 
-        [InputFloatElement("Spore Shroom Options", "DC Cloud Duration", 0f, 10f)]
-        public float sporeShroomDefendersCrestCloudDuration = 4.1f;
+        //[InputFloatElement("Spore Shroom Options", "DC Cloud Duration", 0f, 10f)]
+        //public float sporeShroomDefendersCrestCloudDuration = 4.1f;
 
         [InputFloatElement("Spore Shroom Options", "DC Damage Timer", 0.01f, 1f)]
         public float sporeShroomDefendersCrestDamageRate = 0.2f;
@@ -2034,7 +2040,7 @@ namespace CharmChanger
             sporeShroomDamageResetsCooldown = true;
             sporeShroomCooldown = 4.25f;
             sporeShroomCloudDuration = 4.1f;
-            sporeShroomDefendersCrestCloudDuration = 4.1f;
+            //sporeShroomDefendersCrestCloudDuration = 4.1f;
             sporeShroomDamageRate = 0.15f;
             sporeShroomDefendersCrestDamageRate = 0.2f;
         }
@@ -2130,8 +2136,8 @@ namespace CharmChanger
         [InputIntElement("Glowing Womb Options", "DC Impact Damage", 0, 100)]
         public int glowingWombDefendersCrestDamage = 4;
 
-        [InputFloatElement("Glowing Womb Options", "DC Cloud Duration", 0f, 10f)]
-        public float glowingWombDefendersCrestDuration = 1f;
+        //[InputFloatElement("Glowing Womb Options", "DC Cloud Duration", 0f, 10f)]
+        //public float glowingWombDefendersCrestDuration = 1f;
 
         [InputFloatElement("Glowing Womb Options", "DC Damage Timer", 0.01f, 1f)]
         public float glowingWombDefendersCrestDamageRate = 0.2f;
@@ -2145,7 +2151,7 @@ namespace CharmChanger
             glowingWombDamage = 9;
             glowingWombDefendersCrestDamage = 4;
             glowingWombFuryOfTheFallenDamage = 5;
-            glowingWombDefendersCrestDuration = 1f;
+            //glowingWombDefendersCrestDuration = 1f;
             glowingWombDefendersCrestDamageRate = 0.2f;
         }
         #endregion
@@ -2178,7 +2184,7 @@ namespace CharmChanger
         }
         #endregion
         #region Joni's Blessing Settings
-        [InputIntElement("Joni's Blessing Options", "Health Increase (%)", 0, 300)]
+        [InputIntElement("Joni's Blessing Options", "Health Increase (%)", 0, 500)]
         public int jonisBlessingScaling = 50;
 
         [ButtonElement("Joni's Blessing Options", "Reset Defaults", "")]
@@ -2251,14 +2257,10 @@ namespace CharmChanger
         [InputFloatElement("Quick Slash Options", "Attack Cooldown", 0f, 2f)]
         public float quickSlashAttackCooldown = 0.25f;
 
-        [InputFloatElement("Quick Slash Options", "Attack Duration", 0f, 2f)]
-        public float quickSlashAttackDuration = 0.28f;
-
         [ButtonElement("Quick Slash Options", "Reset Defaults", "")]
         public void ResetQuickSlash()
         {
             quickSlashAttackCooldown = 0.25f;
-            quickSlashAttackDuration = 0.28f;
         }
         #endregion
         #region Spell Twister Settings
@@ -2281,7 +2283,7 @@ namespace CharmChanger
         [InputIntElement("Grubberfly's Elegy Options", "FotF Increase (%)", 0, 500)]
         public int grubberflysElegyFuryOfTheFallenScaling = 50;
 
-        [InputIntElement("Grubberfly's Elegy Options", "Mark of Pride Scale (%)", 0, 500)]
+        [InputIntElement("Grubberfly's Elegy Options", "Mark of Pride Size Increase (%)", 0, 500)]
         public int grubberflysElegyMarkOfPrideScale = 35;
 
         [ButtonElement("Grubberfly's Elegy Options", "Reset Defaults", "")]
@@ -2368,7 +2370,7 @@ namespace CharmChanger
         [InputFloatElement("Weaversong Options", "Maximum Speed", 0f, 36f)]
         public float weaversongSpeedMax = 10f;
 
-        [InputIntElement("Weaversong Options", "Sprintmaster Increase (%)", 0, 300)]
+        [InputIntElement("Weaversong Options", "Sprintmaster Increase (%)", 0, 500)]
         public int weaversongSpeedSprintmaster = 50;
 
         [InputIntElement("Weaversong Options", "Grubsong Soul", 0, 198)]
