@@ -329,8 +329,8 @@ namespace CharmChanger
         // Invulnerability time and inaction time
         private IEnumerator StalwartShellChanges(On.HeroController.orig_StartRecoil orig, HeroController self, CollisionSide impactSide, bool spawnDamageEffect, int damageAmount)
         {
-            self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability / 100f;
-            self.RECOIL_DURATION_STAL = LS.stalwartShellRecoil / 100f;
+            self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability;
+            self.RECOIL_DURATION_STAL = LS.stalwartShellRecoil;
 
             return orig(self, impactSide, spawnDamageEffect, damageAmount);
         }
@@ -435,7 +435,7 @@ namespace CharmChanger
             {
                 if (self.State.Name == "Set Focus Speed" && self.floatValue.Name == "Time Per MP Drain CH")
                 {
-                    self.floatValue.Value = LS.quickFocusFocusTime / 33000f;
+                    self.floatValue.Value = LS.quickFocusFocusTime;
                 }
             }
 
@@ -497,7 +497,7 @@ namespace CharmChanger
                 self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.defendersCrestCloudDuration;
 
                 // Damage Rate
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.defendersCrestDamageRate / 100f;
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.defendersCrestDamageRate;
             }
 
             orig(self);
@@ -506,7 +506,7 @@ namespace CharmChanger
         {
             if (self.Fsm.GameObject.name == "Dung" && self.Fsm.Name == "Control" && self.State.Name == "Equipped")
             {
-                self.frequency.Value = (float)(LS.defendersCrestCloudFrequency / 100f);
+                self.frequency.Value = LS.defendersCrestCloudFrequency;
             }
 
             orig(self);
@@ -552,13 +552,13 @@ namespace CharmChanger
                 // Regular
                 if (self.State.Name == "Normal")
                 {
-                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestDamageRate / 1000f } };
+                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestDamageRate } };
                 }
 
                 // Shaman Stone
                 else if (self.State.Name == "Spell Up")
                 {
-                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestShamanStoneDamageRate / 1000f } };
+                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestShamanStoneDamageRate } };
                 }
             }
             orig(self);
@@ -617,21 +617,21 @@ namespace CharmChanger
             while (cursor.TryGotoNext(i => i.MatchLdcR4(1.4f)))
             {
                 cursor.GotoNext();
-                cursor.EmitDelegate<Func<float, float>>(scale => (float)(LS.longnailMarkOfPrideScale / 100f));
+                cursor.EmitDelegate<Func<float, float>>(scale => (float)(1f + (LS.longnailMarkOfPrideScale / 100f)));
             }
 
             // Mark of Pride Scaling
             while (cursor.TryGotoNext(i => i.MatchLdcR4(1.25f)))
             {
                 cursor.GotoNext();
-                cursor.EmitDelegate<Func<float, float>>(scale => (float)(LS.markOfPrideScale / 100f));
+                cursor.EmitDelegate<Func<float, float>>(scale => (float)(1f + (LS.markOfPrideScale / 100f)));
             }
 
             // Longnail Scaling
             while (cursor.TryGotoNext(i => i.MatchLdcR4(1.15f)))
             {
                 cursor.GotoNext();
-                cursor.EmitDelegate<Func<float, float>>(scale => (float)(LS.longnailScale / 100f));
+                cursor.EmitDelegate<Func<float, float>>(scale => (float)(1f + (LS.longnailScale / 100f)));
             }
         }
 
@@ -639,7 +639,6 @@ namespace CharmChanger
         private void OnFsmEnable(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
         {
             orig(self);
-
             if (self.gameObject.name == "Charm Effects" && self.FsmName == "Slash Size Modifiers")
             {
                 self.AddFsmAction("Init", new FindChild()
@@ -788,7 +787,7 @@ namespace CharmChanger
                 // Wall Slash
                 if (self.gameObject.GameObject.Name == "Wall Slash")
                 {
-                    self.setValue.Value = (LS.heavyBlowWallSlash) ? 1f + (float)(LS.heavyBlowSlashRecoil / 100f): 1f;
+                    self.setValue.Value = (LS.heavyBlowWallSlash) ? 1f + (float)(LS.heavyBlowSlashRecoil / 100f) : 1f;
                 }
 
                 // Regular Slashes
@@ -880,7 +879,7 @@ namespace CharmChanger
                 self.time.Value = LS.sporeShroomCloudDuration;
 
                 // Damage Rate
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.sporeShroomDamageRate / 1000f;
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.sporeShroomDamageRate;
             }
 
             // Spore Shroom + Defender's Crest Cloud
@@ -890,13 +889,13 @@ namespace CharmChanger
                 self.time.Value = LS.sporeShroomDefendersCrestCloudDuration;
 
                 // Damage Rate
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.sporeShroomDefendersCrestDamageRate / 1000f;
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.sporeShroomDefendersCrestDamageRate;
             }
 
             // Spore Shroom Cooldown
             else if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spore Cooldown" && self.State.Name == "Cooldown")
             {
-                self.time.Value = LS.sporeShroomCooldown / 100f;
+                self.time.Value = LS.sporeShroomCooldown;
             }
 
             orig(self);
@@ -1040,7 +1039,7 @@ namespace CharmChanger
                 //self.Fsm.GameObject.transform.Find("Particle System").GetComponent<ParticleSystem>().startLifetime = LS.glowingWombDefendersCrestDuration;
 
                 // Damage Rate
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.glowingWombDefendersCrestDamageRate / 1000f;
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().damageInterval = LS.glowingWombDefendersCrestDamageRate;
             }
 
             // Hatchling Spawn Rate
@@ -1147,7 +1146,7 @@ namespace CharmChanger
 
             if (PlayerData.instance.equippedCharm_26)
             {
-                ReflectionHelper.SetField<HeroController, float>(self, "nailChargeTime", (float)(LS.nailmastersGloryChargeTime / 100f));
+                ReflectionHelper.SetField<HeroController, float>(self, "nailChargeTime", LS.nailmastersGloryChargeTime);
             }
         }
         #endregion
@@ -1257,7 +1256,7 @@ namespace CharmChanger
             ILCursor cursor = new ILCursor(il).Goto(0);
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_COOLDOWN_TIME_CH"));
             cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => (float)(LS.quickSlashAttackCooldown / 100f));
+            cursor.EmitDelegate<Func<float, float>>(time => LS.quickSlashAttackCooldown);
         }
 
         private void QuickSlashAttackDuration(ILContext il)
@@ -1265,7 +1264,7 @@ namespace CharmChanger
             ILCursor cursor = new ILCursor(il).Goto(0);
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_DURATION_CH"));
             cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => (float)(LS.quickSlashAttackDuration / 100f));
+            cursor.EmitDelegate<Func<float, float>>(time => LS.quickSlashAttackDuration);
         }
         #endregion
         #region Spell Twister Changes
@@ -1283,7 +1282,7 @@ namespace CharmChanger
         #region Grubberfly's Elegy Changes
         private void GrubberflysElegyMarkOfPrideSizeScale(On.HeroController.orig_Attack orig, HeroController self, AttackDirection attackDir)
         {
-            ReflectionHelper.SetField<HeroController, float>(self, "MANTIS_CHARM_SCALE", (float)(LS.grubberflysElegyMarkOfPrideScale / 100f));
+            ReflectionHelper.SetField<HeroController, float>(self, "MANTIS_CHARM_SCALE", 1f + (float)(LS.grubberflysElegyMarkOfPrideScale / 100f));
 
             orig(self, attackDir);
         }
@@ -1308,7 +1307,7 @@ namespace CharmChanger
         {
             if (self.Fsm.GameObject.name == "Attacks" && self.Fsm.Name == "Set Slash Damage" && self.State.Name == "Set Beam Damage")
             {
-                self.float2.Value = LS.grubberflysElegyDamageScale;
+                self.float2.Value = 0.5f * LS.grubberflysElegyDamageScale;
             }
 
             orig(self);
@@ -1757,7 +1756,7 @@ namespace CharmChanger
         #endregion
 
         #region Grubsong Settings
-        [InputIntElement("Grubsong Options", "Soul3", 0, 198)]
+        [InputIntElement("Grubsong Options", "Soul", 0, 198)]
         public int grubsongDamageSoul = 15;
 
         [InputIntElement("Grubsong Options", "Grubberfly's Soul", 0, 198)]
@@ -1771,21 +1770,21 @@ namespace CharmChanger
         }
         #endregion
         #region Stalwart Shell Settings
-        [SliderIntElement("Stalwart Shell Options", "Invul Time (100ths)", 0, 350)]
-        public int stalwartShellInvulnerability = 175;
+        [InputFloatElement("Stalwart Shell Options", "Invuln. Time", 0, 10)]
+        public float stalwartShellInvulnerability = 1.75f;
 
-        [SliderIntElement("Stalwart Shell Options", "Recoil Time (100ths)", 0, 20)]
-        public int stalwartShellRecoil = 8;
+        [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 5)]
+        public float stalwartShellRecoil = 0.08f;
 
         [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
         public void ResetStalwartShell()
         {
-            stalwartShellInvulnerability = 175;
-            stalwartShellRecoil = 8;
+            stalwartShellInvulnerability = 1.75f;
+            stalwartShellRecoil = 0.08f;
         }
         #endregion
         #region Baldur Shell Settings
-        [SliderFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 5f)]
+        [InputFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 10f)]
         public float baldurShellKnockbackMult = 1.0f;
 
         [SliderIntElement("Baldur Shell Options", "Blocks", 0, 4)]
@@ -1802,10 +1801,10 @@ namespace CharmChanger
         [BoolElement("Fury of the Fallen Options", "Works With Joni's Blessing", "Should FotF work with Joni's Blessing at any Health?")]
         public bool furyOfTheFallenJonis = false;
 
-        [SliderIntElement("Fury of the Fallen Options", "Health Threshold", 1, 13)]
+        [SliderIntElement("Fury of the Fallen Options", "Health Threshold", 0, 13)]
         public int furyOfTheFallenHealth = 1;
 
-        [SliderIntElement("Fury of the Fallen Options", "Damage Increase (%)", 0, 300)]
+        [InputIntElement("Fury of the Fallen Options", "Damage Increase (%)", 0, 500)]
         public int furyOfTheFallenScaling = 75;
 
         [ButtonElement("Fury of the Fallen Options", "Reset Defaults", "")]
@@ -1817,10 +1816,10 @@ namespace CharmChanger
         }
         #endregion
         #region Quick/Deep Focus Settings
-        [SliderIntElement("Quick/Deep Focus Options", "Quick Focus Time (1000ths)", 45, 891)]
-        public int quickFocusFocusTime = 594;
+        [InputFloatElement("Quick/Deep Focus Options", "Quick Focus Time", 0.001f, 2f)]
+        public float quickFocusFocusTime = 0.594f;
 
-        [SliderIntElement("Quick/Deep Focus Options", "Deep Focus Added Time (%)", 0, 300)]
+        [InputIntElement("Quick/Deep Focus Options", "DF Added Time (%)", 0, 500)]
         public int deepFocusHealingTimeScale = 65;
 
         [SliderIntElement("Quick/Deep Focus Options", "Deep Focus Healing", 0, 13)]
@@ -1829,7 +1828,7 @@ namespace CharmChanger
         [ButtonElement("Quick/Deep Focus Options", "Reset Defaults", "")]    
         public void ResetQuickAndDeepFocus()
         {
-            quickFocusFocusTime = 594;
+            quickFocusFocusTime = 0.594f;
             deepFocusHealingTimeScale = 65;
             deepFocusHealing = 2;
         }
@@ -1849,60 +1848,60 @@ namespace CharmChanger
         }
         #endregion
         #region Defender's Crest Settings
-        [SliderIntElement("Defender's Crest Options", "Shop Discount (%)", 0, 100)]
+        [InputIntElement("Defender's Crest Options", "Shop Discount (%)", 0, 100)]
         public int defendersCrestDiscount = 20;
 
-        [SliderIntElement("Defender's Crest Options", "Cloud Spawn Rate (100ths)", 20, 300)]
-        public int defendersCrestCloudFrequency = 75;
+        [InputFloatElement("Defender's Crest Options", "Cloud Spawn Timer", 0.2f, 5f)]
+        public float defendersCrestCloudFrequency = 0.75f;
 
-        [SliderFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
+        [InputFloatElement("Defender's Crest Options", "Cloud Duration", 0f, 5f)]
         public float defendersCrestCloudDuration = 1.1f;
 
-        [SliderIntElement("Defender's Crest Options", "Tick Rate (100ths)", 1, 30)]
-        public int defendersCrestDamageRate = 30;
+        [InputFloatElement("Defender's Crest Options", "Damage Timer", 0.01f, 1f)]
+        public float defendersCrestDamageRate = 0.3f;
 
         [ButtonElement("Defender's Crest Options", "Reset Defaults", "")]
         public void ResetDefendersCrest()
         {
             defendersCrestDiscount = 20;
+            defendersCrestCloudFrequency = 0.75f;
             defendersCrestCloudDuration = 1.1f;
-            defendersCrestCloudFrequency = 75;
-            defendersCrestDamageRate = 30;
+            defendersCrestDamageRate = 0.3f;
         }
         #endregion
         #region Flukenest Settings
-        [SliderIntElement("Flukenest Options", "Damage", 0, 20)]
+        [InputIntElement("Flukenest Options", "Damage", 0, 100)]
         public int flukenestDamage = 4;
 
-        [SliderIntElement("Flukenest Options", "Shaman Stone Damage", 0, 20)]
+        [InputIntElement("Flukenest Options", "Shaman Stone Damage", 0, 100)]
         public int flukenestShamanStoneDamage = 5;
 
-        [SliderIntElement("Flukenest Options", "Vengeful Spirit Fluke #", 0, 36)]
+        [InputIntElement("Flukenest Options", "Vengeful Spirit Fluke #", 0, 36)]
         public int flukenestVSFlukes = 9;
 
-        [SliderIntElement("Flukenest Options", "Shade Soul Fluke #", 0, 64)]
+        [InputIntElement("Flukenest Options", "Shade Soul Fluke #", 0, 64)]
         public int flukenestSSFlukes = 16;
 
-        [SliderFloatElement("Flukenest Options", "Minimum Size", 0f, 3f)]
+        [InputFloatElement("Flukenest Options", "Minimum Size Scale", 0f, 3f)]
         public float flukenestFlukeSizeMin = 0.7f;
 
-        [SliderFloatElement("Flukenest Options", "Maximum Size", 0f, 3f)]
+        [InputFloatElement("Flukenest Options", "Maximum Size Scale", 0f, 3f)]
         public float flukenestFlukeSizeMax = 0.9f;
 
-        [SliderFloatElement("Flukenest Options", "SS Minimum Size", 0f, 2.7f)]
+        [InputFloatElement("Flukenest Options", "SS Minimum Size Scale", 0f, 3f)]
         public float flukenestShamanStoneFlukeSizeMin = 0.9f;
 
-        [SliderFloatElement("Flukenest Options", "SS Maximum Size", 0f, 3.6f)]
+        [InputFloatElement("Flukenest Options", "SS Maximum Size Scale", 0f, 3f)]
         public float flukenestShamanStoneFlukeSizeMax = 1.2f;
 
-        [SliderFloatElement("Flukenest Options", "DC Cloud Duration", 0f, 10f)]
+        [InputFloatElement("Flukenest Options", "DC Cloud Duration", 0f, 10f)]
         public float flukenestDefendersCrestDuration = 2.2f;
 
-        [SliderIntElement("Flukenest Options", "DC Tick Rate (1000ths)", 10, 100)]
-        public int flukenestDefendersCrestDamageRate = 100;
+        [InputFloatElement("Flukenest Options", "DC Damage Timer", 0.01f, 1f)]
+        public float flukenestDefendersCrestDamageRate = 0.1f;
 
-        [SliderIntElement("Flukenest Options", "DC + SS Tick Rate (1000ths)", 10, 500)]
-        public int flukenestDefendersCrestShamanStoneDamageRate = 75;
+        [InputFloatElement("Flukenest Options", "DC + SS Damage Timer", 0.01f, 1f)]
+        public float flukenestDefendersCrestShamanStoneDamageRate = 0.075f;
 
         [ButtonElement("Flukenest Options", "Reset Defaults", "")]
         public void ResetFlukenest()
@@ -1916,12 +1915,12 @@ namespace CharmChanger
             flukenestVSFlukes = 9;
             flukenestSSFlukes = 16;
             flukenestDefendersCrestDuration = 2.2f;
-            flukenestDefendersCrestDamageRate = 100;
-            flukenestDefendersCrestShamanStoneDamageRate = 75;
+            flukenestDefendersCrestDamageRate = 0.1f;
+            flukenestDefendersCrestShamanStoneDamageRate = 0.075f;
         }
         #endregion
         #region Thorns of Agony Settings
-        [SliderFloatElement("Thorns of Agony Options", "Damage Mulitplier", 0f, 5f)]
+        [InputFloatElement("Thorns of Agony Options", "Damage Mulitplier", 0f, 5f)]
         public float thornsOfAgonyDamageMultiplier = 1.0f;
 
         [ButtonElement("Thorns of Agony Options", "Reset Defaults", "")]
@@ -1934,22 +1933,22 @@ namespace CharmChanger
         [BoolElement("Longnail / Mark of Pride Options", "Works with Wall Slash", "")]
         public bool longnailMarkOfPrideWallSlash = false;
 
-        [SliderIntElement("Longnail / Mark of Pride Options", "Combo Scale (100ths)", 0, 500)]
-        public int longnailMarkOfPrideScale = 140;
+        [InputIntElement("Longnail / Mark of Pride Options", "Combo Size Increase (%)", 0, 500)]
+        public int longnailMarkOfPrideScale = 40;
 
-        [SliderIntElement("Longnail / Mark of Pride Options", "MoP Scale (100ths)", 0, 500)]
-        public int markOfPrideScale = 125;
+        [InputIntElement("Longnail / Mark of Pride Options", "MoP Size Increase (%)", 0, 500)]
+        public int markOfPrideScale = 25;
 
-        [SliderIntElement("Longnail / Mark of Pride Options", "Longnail Scale (100ths)", 0, 500)]
-        public int longnailScale = 115;
+        [InputIntElement("Longnail / Mark of Pride Options", "Longnail Increase (%)", 0, 500)]
+        public int longnailScale = 15;
 
         [ButtonElement("Longnail / Mark of Pride Options", "Reset Defaults", "")]
         public void ResetLongnailAndMarkOfPride()
         {
             longnailMarkOfPrideWallSlash = false;
-            longnailMarkOfPrideScale = 140;
-            markOfPrideScale = 125;
-            longnailScale = 115;            
+            longnailMarkOfPrideScale = 40;
+            markOfPrideScale = 25;
+            longnailScale = 15;            
         }
         #endregion
         #region Heavy Blow Settings
@@ -1959,13 +1958,13 @@ namespace CharmChanger
         [BoolElement("Heavy Blow Options", "Works with Cyclone Slash", "")]
         public bool heavyBlowCycloneSlash = false;
 
-        [SliderIntElement("Heavy Blow Options", "Knockback Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Knockback Increase (%)", 0, 1000)]
         public int heavyBlowSlashRecoil = 75;
 
-        [SliderIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 1000)]
         public int heavyBlowGreatSlashRecoil = 33;
 
-        [SliderIntElement("Heavy Blow Options", "Cyclone Slash Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Cyclone Increase (%)", 0, 1000)]
         public int heavyBlowCycloneSlashRecoil = 25;
 
         [SliderIntElement("Heavy Blow Options", "Stagger Reduction", 0, 20)]
@@ -1987,13 +1986,13 @@ namespace CharmChanger
         }
         #endregion
         #region Sharp Shadow Settings
-        [SliderFloatElement("Sharp Shadow Options", "Damage Multiplier", 0f, 5f)]
+        [InputFloatElement("Sharp Shadow Options", "Damage Multiplier", 0f, 5f)]
         public float SharpShadowDamageMultiplier = 1.0f;
 
-        [SliderIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 300)]
+        [InputIntElement("Sharp Shadow Options", "Dashmaster Increase (%)", 0, 300)]
         public int SharpShadowDashmasterDamageIncrease = 50;
 
-        [SliderFloatElement("Sharp Shadow Options", "Sharp Shadow Dash Speed", 0f, 75f)]
+        [InputFloatElement("Sharp Shadow Options", "Dash Speed", 0f, 75f)]
         public float SharpShadowDashSpeed = 28f;
 
         [ButtonElement("Sharp Shadow Options", "Reset Defaults", "")]
@@ -2008,64 +2007,64 @@ namespace CharmChanger
         [BoolElement("Spore Shroom Options", "Cooldown Resets On Damage", "Should Spore Shroom's cooldown reset when taking damage?")]
         public bool sporeShroomDamageResetsCooldown = true;
 
-        [SliderIntElement("Spore Shroom Options", "Cloud Cooldown (100ths)", 0, 425)]
-        public int sporeShroomCooldown = 425;
+        [InputFloatElement("Spore Shroom Options", "Cloud Cooldown", 0f, 20f)]
+        public float sporeShroomCooldown = 4.25f;
 
-        [SliderFloatElement("Spore Shroom Options", "Cloud Duration", 0f, 10f)]
+        [InputFloatElement("Spore Shroom Options", "Cloud Duration", 0f, 10f)]
         public float sporeShroomCloudDuration = 4.1f;
 
-        [SliderFloatElement("Spore Shroom Options", "DC Cloud Duration", 0f, 10f)]
+        [InputFloatElement("Spore Shroom Options", "Damage Timer", 0.01f, 1f)]
+        public float sporeShroomDamageRate = 0.15f;
+
+        [InputFloatElement("Spore Shroom Options", "DC Cloud Duration", 0f, 10f)]
         public float sporeShroomDefendersCrestCloudDuration = 4.1f;
 
-        [SliderIntElement("Spore Shroom Options", "Tick Rate (1000ths)", 10, 150)]
-        public int sporeShroomDamageRate = 150;
-
-        [SliderIntElement("Spore Shroom Options", "DC Tick Rate (1000ths)", 10, 200)]
-        public int sporeShroomDefendersCrestDamageRate = 200;
+        [InputFloatElement("Spore Shroom Options", "DC Damage Timer", 0.01f, 1f)]
+        public float sporeShroomDefendersCrestDamageRate = 0.2f;
 
         [ButtonElement("Spore Shroom Options", "Reset Defaults", "")]
         public void ResetSporeShroom()
         {
             sporeShroomDamageResetsCooldown = true;
-            sporeShroomCooldown = 425;
+            sporeShroomCooldown = 4.25f;
             sporeShroomCloudDuration = 4.1f;
             sporeShroomDefendersCrestCloudDuration = 4.1f;
-            sporeShroomDamageRate = 150;
-            sporeShroomDefendersCrestDamageRate = 200;
+            sporeShroomDamageRate = 0.15f;
+            sporeShroomDefendersCrestDamageRate = 0.2f;
         }
         #endregion
         #region Shaman Stone Settings
-        [SliderFloatElement("Shaman Stone Options", "Vengeful Spirit X Scale", 0f, 5f)]
+        [InputFloatElement("Shaman Stone Options", "Vengeful Spirit X Scale", 0f, 5f)]
         public float shamanStoneVSSizeScaleX = 1.3f;
 
-        [SliderFloatElement("Shaman Stone Options", "Vengeful Spirit Y Scale", 0f, 5f)]
+        [InputFloatElement("Shaman Stone Options", "Vengeful Spirit Y Scale", 0f, 5f)]
         public float shamanStoneVSSizeScaleY = 1.6f;
 
-        [SliderFloatElement("Shaman Stone Options", "Shade Soul X Scale", 0f, 5f)]
+        [InputFloatElement("Shaman Stone Options", "Shade Soul X Scale", 0f, 5f)]
         public float shamanStoneSSSizeScaleX = 1.3f;
 
-        [SliderFloatElement("Shaman Stone Options", "Shade Soul Y Scale", 0f, 5f)]
+        [InputFloatElement("Shaman Stone Options", "Shade Soul Y Scale", 0f, 5f)]
         public float shamanStoneSSSizeScaleY = 1.6f;
 
-        [SliderIntElement("Shaman Stone Options", "Vengeful Spirit Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Vengeful Spirit Damage", 0, 100)]
         public int shamanStoneVSDamage = 20;
 
-        [SliderIntElement("Shaman Stone Options", "Shade Soul Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Shade Soul Damage", 0, 100)]
         public int shamanStoneSSDamage = 40;
 
-        [SliderIntElement("Shaman Stone Options", "Howling Wraiths Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Howling Wraiths Damage", 0, 100)]
         public int shamanStoneHWDamage = 20;
 
-        [SliderIntElement("Shaman Stone Options", "Abyss Shriek Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Abyss Shriek Damage", 0, 100)]
         public int shamanStoneASDamage = 40;
 
-        [SliderIntElement("Shaman Stone Options", "Dive Contact Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Dive Contact Damage", 0, 100)]
         public int shamanStoneDiveDamage = 23;
 
-        [SliderIntElement("Shaman Stone Options", "Desolate Dive Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Desolate Dive Damage", 0, 100)]
         public int shamanStoneDDiveDamage = 30;
 
-        [SliderIntElement("Shaman Stone Options", "Descending Dark Damage", 0, 100)]
+        [InputIntElement("Shaman Stone Options", "Descending Dark Damage", 0, 100)]
         public int shamanStoneDDarkDamage = 50;
 
         [ButtonElement("Shaman Stone Options", "Reset Defaults", "")]
@@ -2085,16 +2084,16 @@ namespace CharmChanger
         }
         #endregion
         #region Soul Catcher/Eater Settings
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 198)]
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 198)]
         public int soulCatcherSoul = 3;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
         public int soulEaterSoul = 8;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 198)]
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 198)]
         public int soulCatcherReservesSoul = 2;
 
-        [SliderIntElement("Soul Catcher/Eater Options", "Soul Eater Vessel Soul", 0, 198)]
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Vessel Soul", 0, 198)]
         public int soulEaterReservesSoul = 6;
 
         [ButtonElement("Soul Catcher/Eater Options", "Reset Defaults", "")]
@@ -2107,29 +2106,29 @@ namespace CharmChanger
         }
         #endregion
         #region Glowing Womb Settings
-        [SliderFloatElement("Glowing Womb Options", "Spawn Time", 0f, 16f)]
+        [InputFloatElement("Glowing Womb Options", "Spawn Time", 0f, 10f)]
         public float glowingWombSpawnRate = 4f;
 
-        [SliderIntElement("Glowing Womb Options", "Spawn Cost", 0, 198)]
+        [InputIntElement("Glowing Womb Options", "Spawn Cost", 0, 198)]
         public int glowingWombSpawnCost = 8;
 
         [SliderIntElement("Glowing Womb Options", "Spawn Maximum", 0, 12)]
         public int glowingWombSpawnTotal = 4;
 
-        [SliderIntElement("Glowing Womb Options", "Impact Damage", 0, 30)]
+        [InputIntElement("Glowing Womb Options", "Impact Damage", 0, 100)]
         public int glowingWombDamage = 9;
 
-        [SliderIntElement("Glowing Womb Options", "FotF Damage Increase", 0, 15)]
+        [InputIntElement("Glowing Womb Options", "FotF Damage Increase", 0, 100)]
         public int glowingWombFuryOfTheFallenDamage = 5;
 
-        [SliderIntElement("Glowing Womb Options", "DC Impact Damage", 0, 30)]
+        [InputIntElement("Glowing Womb Options", "DC Impact Damage", 0, 100)]
         public int glowingWombDefendersCrestDamage = 4;
 
-        [SliderFloatElement("Glowing Womb Options", "DC Cloud Duration", 0f, 10f)]
+        [InputFloatElement("Glowing Womb Options", "DC Cloud Duration", 0f, 10f)]
         public float glowingWombDefendersCrestDuration = 1f;
 
-        [SliderIntElement("Glowing Womb Options", "DC Tick Rate (1000ths)", 10, 200)]
-        public int glowingWombDefendersCrestDamageRate = 200;
+        [InputFloatElement("Glowing Womb Options", "DC Damage Timer", 0.01f, 1f)]
+        public float glowingWombDefendersCrestDamageRate = 0.2f;
 
         [ButtonElement("Glowing Womb Options", "Reset Defaults", "")]
         public void ResetGlowingWomb()
@@ -2141,17 +2140,17 @@ namespace CharmChanger
             glowingWombDefendersCrestDamage = 4;
             glowingWombFuryOfTheFallenDamage = 5;
             glowingWombDefendersCrestDuration = 1f;
-            glowingWombDefendersCrestDamageRate = 200;
+            glowingWombDefendersCrestDamageRate = 0.2f;
         }
         #endregion
         #region Fragile Charms Settings
         [BoolElement("Fragile/Unbreakable Charms Options", "Fragiles Break On Death", "")]
         public bool fragileCharmsBreak = true;
 
-        [SliderIntElement("Fragile/Unbreakable Charms Options", "Greed Geo Increase (%)", 0, 100)]
+        [InputIntElement("Fragile/Unbreakable Charms Options", "Greed Geo Increase (%)", 0, 500)]
         public int greedGeoIncrease = 20;
 
-        [SliderIntElement("Fragile/Unbreakable Charms Options", "Strength Increase (%)", 0, 300)]
+        [InputIntElement("Fragile/Unbreakable Charms Options", "Strength Increase (%)", 0, 500)]
         public int strengthDamageIncrease = 50;
 
         [ButtonElement("Fragile/Unbreakable Charms Options", "Reset Defaults", "")]
@@ -2163,17 +2162,17 @@ namespace CharmChanger
         }
         #endregion
         #region Nailmaster's Glory Settings
-        [SliderIntElement("Nailmaster's Glory Options", "NArt Charge Time (100ths)", 10, 75)]
-        public int nailmastersGloryChargeTime = 75;
+        [InputFloatElement("Nailmaster's Glory Options", "Nail Art Charge Time", 0.01f, 5f)]
+        public float nailmastersGloryChargeTime = 0.75f;
 
         [ButtonElement("Nailmaster's Glory Options", "Reset Defaults", "")]
         public void ResetNailmastersGlory()
         {
-            nailmastersGloryChargeTime = 75;
+            nailmastersGloryChargeTime = 0.75f;
         }
         #endregion
         #region Joni's Blessing Settings
-        [SliderIntElement("Joni's Blessing Options", "Health Increase (%)", 0, 150)]
+        [InputIntElement("Joni's Blessing Options", "Health Increase (%)", 0, 300)]
         public int jonisBlessingScaling = 50;
 
         [ButtonElement("Joni's Blessing Options", "Reset Defaults", "")]
@@ -2183,10 +2182,10 @@ namespace CharmChanger
         }
         #endregion
         #region Shape Of Unn Settings
-        [SliderFloatElement("Shape Of Unn Options", "Slug Speed", 0f, 36f)]
+        [InputFloatElement("Shape Of Unn Options", "Slug Speed", 0f, 36f)]
         public float shapeOfUnnSpeed = 6f;
 
-        [SliderFloatElement("Shape Of Unn Options", "Quick Focus Slug Speed", 0f, 36f)]
+        [InputFloatElement("Shape Of Unn Options", "Quick Focus Slug Speed", 0f, 36f)]
         public float shapeOfUnnQuickFocusSpeed = 12f;
 
         [ButtonElement("Shape Of Unn Options", "Reset Defaults", "")]
@@ -2197,10 +2196,10 @@ namespace CharmChanger
         }
         #endregion
         #region Hiveblood Settings
-        [SliderFloatElement("Hiveblood Options", "Recovery Time", 0f, 10f)]
+        [InputFloatElement("Hiveblood Options", "Recovery Time", 0f, 60f)]
         public float hivebloodTimer = 10f;
 
-        [SliderFloatElement("Hiveblood Options", "Joni's Recovery Time", 0f, 20f)]
+        [InputFloatElement("Hiveblood Options", "Joni's Recovery Time", 0f, 60f)]
         public float hivebloodJonisTimer = 20f;
 
         [ButtonElement("Hiveblood Options", "Reset Defaults", "")]
@@ -2211,13 +2210,13 @@ namespace CharmChanger
         }
         #endregion
         #region Dream Wielder Settings
-        [SliderIntElement("Dream Wielder Options", "Soul Gain", 0, 100)]
+        [InputIntElement("Dream Wielder Options", "Soul Gain", 0, 198)]
         public int dreamWielderSoulGain = 66;
 
-        [SliderIntElement("Dream Wielder Options", "Essence Chance Low (1/X)", 1, 200)]
+        [InputIntElement("Dream Wielder Options", "Essence Chance Low (1/X)", 1, 1000)]
         public int dreamWielderEssenceChanceLow = 200;
 
-        [SliderIntElement("Dream Wielder Options", "Essence Chance High (1/X)", 1, 40)]
+        [InputIntElement("Dream Wielder Options", "Essence Chance High (1/X)", 1, 1000)]
         public int dreamWielderEssenceChanceHigh = 40;
 
         [ButtonElement("Dream Wielder Options", "Reset Defaults", "")]
@@ -2232,7 +2231,7 @@ namespace CharmChanger
         [BoolElement("Dashmaster Options", "Allows Downward Dash", "")]
         public bool dashmasterDownwardDash = true;
 
-        [SliderFloatElement("Dashmaster Options", "Dash Cooldown", 0f, 0.4f)]
+        [InputFloatElement("Dashmaster Options", "Dash Cooldown", 0f, 10f)]
         public float dashmasterDashCooldown = 0.4f;
 
         [ButtonElement("Dashmaster Options", "Reset Defaults", "")]
@@ -2243,21 +2242,21 @@ namespace CharmChanger
         }
         #endregion
         #region Quick Slash Settings
-        [SliderIntElement("Quick Slash Options", "Attack Cooldown (100ths)", 0, 25)]
-        public int quickSlashAttackCooldown = 25;
+        [InputFloatElement("Quick Slash Options", "Attack Cooldown", 0f, 2f)]
+        public float quickSlashAttackCooldown = 0.25f;
 
-        [SliderIntElement("Quick Slash Options", "Attack Duration (100ths)", 0, 28)]
-        public int quickSlashAttackDuration = 25;
+        [InputFloatElement("Quick Slash Options", "Attack Duration", 0f, 2f)]
+        public float quickSlashAttackDuration = 0.28f;
 
         [ButtonElement("Quick Slash Options", "Reset Defaults", "")]
         public void ResetQuickSlash()
         {
-            quickSlashAttackCooldown = 25;
-            quickSlashAttackDuration = 28;
+            quickSlashAttackCooldown = 0.25f;
+            quickSlashAttackDuration = 0.28f;
         }
         #endregion
         #region Spell Twister Settings
-        [SliderIntElement("Spell Twister Options", "Spell Cost", 0, 33)]
+        [InputIntElement("Spell Twister Options", "Spell Cost", 0, 198)]
         public int spellTwisterSpellCost = 24;
 
         [ButtonElement("Spell Twister Options", "Reset Defaults", "")]
@@ -2267,32 +2266,32 @@ namespace CharmChanger
         }
         #endregion
         #region Grubberfly's Elegy Settings
-        [BoolElement("Grubberfly's Elegy Options", "Ends with Joni's On Damage", "Does taking damage with Joni's Blessing equipped end the effects of Grubberfly's Elegy?")]
+        [BoolElement("Grubberfly's Elegy Options", "Ends with Joni's On Damage", "Does taking damage end the effects of Grubberfly's Elegy?")]
         public bool grubberflysElegyJoniBeamDamageBool = true;
 
-        [SliderFloatElement("Grubberfly's Elegy Options", "Damage Multiplier", 0, 5f)]
-        public float grubberflysElegyDamageScale = 0.5f;
+        [InputFloatElement("Grubberfly's Elegy Options", "Damage Multiplier", 0f, 5f)]
+        public float grubberflysElegyDamageScale = 1.0f;
 
-        [SliderIntElement("Grubberfly's Elegy Options", "FotF Increase (%)", 0, 150)]
+        [InputIntElement("Grubberfly's Elegy Options", "FotF Increase (%)", 0, 500)]
         public int grubberflysElegyFuryOfTheFallenScaling = 50;
 
-        [SliderIntElement("Grubberfly's Elegy Options", "Mark of Pride Scale (100ths)", 0, 400)]
-        public int grubberflysElegyMarkOfPrideScale = 135;
+        [InputIntElement("Grubberfly's Elegy Options", "Mark of Pride Scale (%)", 0, 500)]
+        public int grubberflysElegyMarkOfPrideScale = 35;
 
         [ButtonElement("Grubberfly's Elegy Options", "Reset Defaults", "")]
         public void ResetGrubberflysElegy()
         {
             grubberflysElegyJoniBeamDamageBool = true;
-            grubberflysElegyDamageScale = 0.5f;
+            grubberflysElegyDamageScale = 1f;
             grubberflysElegyFuryOfTheFallenScaling = 50;
-            grubberflysElegyMarkOfPrideScale = 135;
+            grubberflysElegyMarkOfPrideScale = 35;
         }
         #endregion
         #region Kingsoul Settings
-        [SliderIntElement("Kingsoul Options", "Soul Gained", 0, 198)]
+        [InputIntElement("Kingsoul Options", "Soul Gained", 0, 198)]
         public int kingsoulSoulGain = 4;
 
-        [SliderFloatElement("Kingsoul Options", "Soul Timer", 0f, 10f)]
+        [InputFloatElement("Kingsoul Options", "Soul Timer", 0f, 60f)]
         public float kingsoulSoulTime = 2.0f;
 
         [ButtonElement("Kingsoul Options", "Reset Defaults", "")]
@@ -2303,10 +2302,10 @@ namespace CharmChanger
         }
         #endregion
         #region Sprintmaster Settings
-        [SliderFloatElement("Sprintmaster Options", "Speed", 0f, 36f)]
+        [InputFloatElement("Sprintmaster Options", "Speed", 0f, 36f)]
         public float sprintmasterSpeed = 10.0f;
 
-        [SliderFloatElement("Sprintmaster Options", "Dashmaster Speed", 0f, 36f)]
+        [InputFloatElement("Sprintmaster Options", "Dashmaster Speed", 0f, 36f)]
         public float sprintmasterSpeedCombo = 11.5f;
 
         [ButtonElement("Sprintmaster Options", "Reset Defaults", "")]
@@ -2320,22 +2319,22 @@ namespace CharmChanger
         [BoolElement("Dreamshield Options", "Makes Noise On Nail Slash", "")]
         public bool dreamshieldNoise = true;
 
-        [SliderFloatElement("Dreamshield Options", "Damage Multiplier", 0, 5f)]
+        [InputFloatElement("Dreamshield Options", "Damage Multiplier", 0, 5f)]
         public float dreamshieldDamageScale = 1.0f;
 
-        [SliderFloatElement("Dreamshield Options", "Shield Reformation Time", 0f, 10f)]
+        [InputFloatElement("Dreamshield Options", "Shield Reformation Time", 0f, 60f)]
         public float dreamshieldReformationTime = 2.0f;
 
-        [SliderFloatElement("Dreamshield Options", "Size Scale", 0f, 3f)]
+        [InputFloatElement("Dreamshield Options", "Size Scale", 0f, 3f)]
         public float dreamshieldSizeScale = 1.0f;
 
         [SliderFloatElement("Dreamshield Options", "Dream Wielder Size Scale", 0f, 3f)]
         public float dreamshieldDreamWielderSizeScale = 1.15f;
 
-        [SliderIntElement("Dreamshield Options", "Rotation Speed", 0, 1000)]
+        [InputIntElement("Dreamshield Options", "Rotation Speed", 0, 1000)]
         public int dreamshieldSpeed = 110;
 
-        [SliderIntElement("Dreamshield Options", "Focusing Rotation Speed", 0, 1000)]
+        [InputIntElement("Dreamshield Options", "Focusing Rotation Speed", 0, 1000)]
         public int dreamshieldFocusSpeed = 300;
 
         [ButtonElement("Dreamshield Options", "Reset Defaults", "")]
@@ -2354,19 +2353,19 @@ namespace CharmChanger
         [SliderIntElement("Weaversong Options", "Weaverling Total", 1, 9)]
         public int weaversongCount = 3;
 
-        [SliderIntElement("Weaversong Options", "Damage", 0, 15)]
+        [InputIntElement("Weaversong Options", "Damage", 0, 100)]
         public int weaversongDamage = 3;
 
-        [SliderFloatElement("Weaversong Options", "Minimum Speed", 0f, 20f)]
+        [InputFloatElement("Weaversong Options", "Minimum Speed", 0f, 36f)]
         public float weaversongSpeedMin = 6f;
 
-        [SliderFloatElement("Weaversong Options", "Maximum Speed", 0f, 20f)]
+        [InputFloatElement("Weaversong Options", "Maximum Speed", 0f, 36f)]
         public float weaversongSpeedMax = 10f;
 
-        [SliderIntElement("Weaversong Options", "Sprintmaster Increase (%)", 0, 150)]
+        [InputIntElement("Weaversong Options", "Sprintmaster Increase (%)", 0, 300)]
         public int weaversongSpeedSprintmaster = 50;
 
-        [SliderIntElement("Weaversong Options", "Grubsong Soul", 0, 198)]
+        [InputIntElement("Weaversong Options", "Grubsong Soul", 0, 198)]
         public int weaversongGrubsongSoul = 3;
 
         [ButtonElement("Weaversong Options", "Reset Defaults", "")]
@@ -2381,17 +2380,17 @@ namespace CharmChanger
         }
         #endregion
         #region Grimmchild Settings
-        [SliderIntElement("Grimmchild Options", "Level 2 Damage", 0, 22)]
+        [InputIntElement("Grimmchild Options", "Level 2 Damage", 0, 100)]
         public int grimmchildDamage2 = 5;
 
-        [SliderIntElement("Grimmchild Options", "Level 3 Damage", 0, 22)]
+        [InputIntElement("Grimmchild Options", "Level 3 Damage", 0, 100)]
         public int grimmchildDamage3 = 8;
 
-        [SliderIntElement("Grimmchild Options", "Level 4 Damage", 0, 22)]
+        [InputIntElement("Grimmchild Options", "Level 4 Damage", 0, 100)]
         public int grimmchildDamage4 = 11;
 
-        [SliderFloatElement("Grimmchild Options", "Attack Cooldown", 0f, 2f)]
-        public float grimmchildAttackTimer = 2f;
+        [InputFloatElement("Grimmchild Options", "Attack Cooldown", 0f, 10f)]
+        public float grimmchildAttackTimer = 2.0f;
 
         [ButtonElement("Grimmchild Options", "Reset Defaults", "")]
         public void ResetGrimmchild()
@@ -2399,29 +2398,29 @@ namespace CharmChanger
             grimmchildDamage2 = 5;
             grimmchildDamage3 = 8;
             grimmchildDamage4 = 11;
-            grimmchildAttackTimer = 2f;
+            grimmchildAttackTimer = 2.0f;
         }
         #endregion
         #region Carefree Melody Settings
-        [SliderIntElement("Carefree Melody Options", "First Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "First Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance1 = 10;
 
-        [SliderIntElement("Carefree Melody Options", "Second Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Second Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance2 = 20;
 
-        [SliderIntElement("Carefree Melody Options", "Third Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Third Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance3 = 30;
 
-        [SliderIntElement("Carefree Melody Options", "Fourth Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Fourth Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance4 = 50;
 
-        [SliderIntElement("Carefree Melody Options", "Fifth Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Fifth Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance5 = 70;
 
-        [SliderIntElement("Carefree Melody Options", "Sixth Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Sixth Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance6 = 80;
 
-        [SliderIntElement("Carefree Melody Options", "Seventh Chance (X/99)", 0, 99)]
+        [InputIntElement("Carefree Melody Options", "Seventh Chance (X/99)", 0, 99)]
         public int carefreeMelodyChance7 = 90;
 
         [ButtonElement("Carefree Melody Options", "Reset Defaults", "")]

@@ -45,7 +45,7 @@ public class InputFloatElementAttribute : ModMenuElementAttribute
     public string PlaceHolder;
     public int CharacterLimit;
 
-    public InputFloatElementAttribute(string menuName, string elementName, float minValue, float maxValue, float defaultValue = 0f, string placeHolder = "", int characterLimit = 7) :
+    public InputFloatElementAttribute(string menuName, string elementName, float minValue, float maxValue, float defaultValue = 0f, string placeHolder = "", int characterLimit = 5) :
         base(menuName, elementName, "")
     {
         MinValue = minValue;
@@ -75,7 +75,7 @@ public class InputIntElementAttribute : ModMenuElementAttribute
     public string PlaceHolder;
     public int CharacterLimit;
 
-    public InputIntElementAttribute(string menuName, string elementName, int minValue, int maxValue, int defaultValue = 0, string placeHolder = "", int characterLimit = 7) :
+    public InputIntElementAttribute(string menuName, string elementName, int minValue, int maxValue, int defaultValue = 0, string placeHolder = "", int characterLimit = 4) :
         base(menuName, elementName, "")
     {
         MinValue = minValue;
