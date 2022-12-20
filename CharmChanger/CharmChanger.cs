@@ -1,15 +1,15 @@
-using GlobalEnums;
+using UnityEngine;
 using Modding;
 using System;
-using HutongGames.PlayMaker.Actions;
-using HutongGames.PlayMaker;
-using UnityEngine;
 using System.Collections;
-using SFCore.Utils;
-using MonoMod.RuntimeDetour;
 using System.Reflection;
+using GlobalEnums;
+using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
+using MonoMod.RuntimeDetour;
 using MonoMod.Cil;
 using Satchel;
+using SFCore.Utils;
 
 namespace CharmChanger
 {
@@ -88,8 +88,7 @@ namespace CharmChanger
             #endregion
             #region Flukenest Init
             On.HutongGames.PlayMaker.Actions.FlingObjectsFromGlobalPool.OnEnter += FlukeCount;
-            On.HutongGames.PlayMaker.Actions.Wait.OnEnter += FlukenestDefendersCrestDuration;
-            On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter += FlukenestDefendersCrestDamageRate;
+            On.HutongGames.PlayMaker.Actions.Wait.OnEnter += FlukenestDefendersCrestDurationAndDamage;
             ilflukenestEnable = new ILHook(flukenestEnable, FlukenestEnableHook);
             #endregion
             #region Thorns of Agony Init
@@ -439,7 +438,7 @@ namespace CharmChanger
             {
                 if (self.State.Name == "Set Focus Speed" && self.floatValue.Name == "Time Per MP Drain CH")
                 {
-                    self.floatValue.Value = LS.quickFocusFocusTime;
+                    self.floatValue.Value = LS.quickFocusFocusTime / 33f;
                 }
             }
 
@@ -537,34 +536,18 @@ namespace CharmChanger
             orig(self);
         }
 
-        private void FlukenestDefendersCrestDuration(On.HutongGames.PlayMaker.Actions.Wait.orig_OnEnter orig, Wait self)
+        private void FlukenestDefendersCrestDurationAndDamage(On.HutongGames.PlayMaker.Actions.Wait.orig_OnEnter orig, Wait self)
         {
             if (self.Fsm.GameObject.name == "Knight Dung Cloud" && self.Fsm.Name == "Control" && self.State.Name == "Collider On")
             {
                 // Duration & Visuals
                 //self.time.Value = LS.flukenestDefendersCrestDuration;
                 //self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.flukenestDefendersCrestDuration;
+
+                // Damage Rates
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().SetDamageInterval(PlayerData.instance.equippedCharm_19 ? LS.flukenestDefendersCrestShamanStoneDamageRate : LS.flukenestDefendersCrestDamageRate);
             }
 
-            orig(self);
-        }
-
-        private void FlukenestDefendersCrestDamageRate(On.HutongGames.PlayMaker.Actions.CallMethodProper.orig_OnEnter orig, CallMethodProper self)
-        {
-            if (self.Fsm.Name.Contains("Spell Fluke Dung Lv") && self.Fsm.Name == "Control")
-            {
-                // Regular
-                if (self.State.Name == "Normal")
-                {
-                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestDamageRate } };
-                }
-
-                // Shaman Stone
-                else if (self.State.Name == "Spell Up")
-                {
-                    self.parameters = new FsmVar[1] { new FsmVar(typeof(float)) { floatValue = LS.flukenestDefendersCrestShamanStoneDamageRate } };
-                }
-            }
             orig(self);
         }
 
@@ -643,6 +626,7 @@ namespace CharmChanger
         private void OnFsmEnable(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
         {
             orig(self);
+
             if (self.gameObject.name == "Charm Effects" && self.FsmName == "Slash Size Modifiers")
             {
                 self.AddFsmAction("Init", new FindChild()
@@ -906,9 +890,9 @@ namespace CharmChanger
         }
         private void SporeShroomDamageReset(On.HutongGames.PlayMaker.Actions.SetBoolValue.orig_OnEnter orig, SetBoolValue self)
         {
-            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name == "Cancel All" && self.boolVariable.Name == "Spore Cooldown" && self.boolVariable.Value == true)
+            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name == "Cancel All" && self.boolVariable.Name == "Spore Cooldown")
             {
-                self.boolValue.Value = !LS.sporeShroomDamageResetsCooldown;
+                self.boolValue.Value = self.boolVariable.Value && !LS.sporeShroomDamageResetsCooldown;
             }
 
             orig(self);
@@ -962,14 +946,14 @@ namespace CharmChanger
 
         private void ShamanStoneDamage(On.HutongGames.PlayMaker.Actions.SetFsmInt.orig_OnEnter orig, SetFsmInt self)
         {
-            if (self.Fsm.GameObject.name == "Fireball 2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 5)
+            if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 5)
             {
-                self.setValue.Value = LS.shamanStoneVSDamage;
+                self.setValue.Value = LS.shamanStoneSSDamage;
             }
 
             else if (self.Fsm.GameObject.name == "Fireball(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 4)
             {
-                self.setValue.Value = LS.shamanStoneSSDamage;
+                self.setValue.Value = LS.shamanStoneVSDamage;
             }
 
             else if (self.Fsm.Name == "Set Damage" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 2)
@@ -1785,7 +1769,7 @@ namespace CharmChanger
         [InputFloatElement("Stalwart Shell Options", "Invuln. Time", 0, 10)]
         public float stalwartShellInvulnerability = 1.75f;
 
-        [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 5)]
+        [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 2.9f)]
         public float stalwartShellRecoil = 0.08f;
 
         [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
@@ -1796,7 +1780,7 @@ namespace CharmChanger
         }
         #endregion
         #region Baldur Shell Settings
-        [InputFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 10f)]
+        [InputFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 5f)]
         public float baldurShellKnockbackMult = 1.0f;
 
         [SliderIntElement("Baldur Shell Options", "Blocks", 0, 4)]
@@ -1970,13 +1954,13 @@ namespace CharmChanger
         [BoolElement("Heavy Blow Options", "Works with Cyclone Slash", "")]
         public bool heavyBlowCycloneSlash = false;
 
-        [InputIntElement("Heavy Blow Options", "Knockback Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Knockback Increase (%)", 0, 500)]
         public int heavyBlowSlashRecoil = 75;
 
-        [InputIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 500)]
         public int heavyBlowGreatSlashRecoil = 33;
 
-        [InputIntElement("Heavy Blow Options", "Cyclone Slash Increase (%)", 0, 1000)]
+        [InputIntElement("Heavy Blow Options", "Cyclone Slash Increase (%)", 0, 500)]
         public int heavyBlowCycloneSlashRecoil = 25;
 
         [SliderIntElement("Heavy Blow Options", "Stagger Reduction", 0, 20)]
@@ -2121,7 +2105,7 @@ namespace CharmChanger
         [InputFloatElement("Glowing Womb Options", "Spawn Time", 0f, 10f)]
         public float glowingWombSpawnRate = 4f;
 
-        [InputIntElement("Glowing Womb Options", "Spawn Cost", 0, 198)]
+        [InputIntElement("Glowing Womb Options", "Spawn Cost", 0, 99)]
         public int glowingWombSpawnCost = 8;
 
         [InputIntElement("Glowing Womb Options", "Spawn Maximum", 0, 12)]
@@ -2264,7 +2248,7 @@ namespace CharmChanger
         }
         #endregion
         #region Spell Twister Settings
-        [InputIntElement("Spell Twister Options", "Spell Cost", 0, 198)]
+        [InputIntElement("Spell Twister Options", "Spell Cost", 0, 99)]
         public int spellTwisterSpellCost = 24;
 
         [ButtonElement("Spell Twister Options", "Reset Defaults", "")]
