@@ -10,6 +10,7 @@ using MonoMod.RuntimeDetour;
 using MonoMod.Cil;
 using Satchel;
 using SFCore.Utils;
+using HKMirror;
 
 namespace CharmChanger
 {
@@ -60,7 +61,8 @@ namespace CharmChanger
             On.HeroController.TakeDamage += GrubsongSoulChanges;
             #endregion
             #region Stalwart Shell Init
-            On.HeroController.StartRecoil += StalwartShellChanges;
+            On.HeroController.StartRecoil += StalwartShellInvulnerability;
+            ilorigUpdate = new ILHook(origUpdate, StalwartShellRecoil);
             #endregion
             #region Baldur Shell Init
             On.BeginRecoil.OnEnter += BaldurShellKnockback;
@@ -199,6 +201,10 @@ namespace CharmChanger
         }
         #endregion
 
+        #region Stalwart Shell IL Hooks
+        private static readonly MethodInfo origUpdate = typeof(HeroController).GetMethod("orig_Update", BindingFlags.NonPublic | BindingFlags.Instance);
+        private ILHook? ilorigUpdate;
+        #endregion
         #region Fury of the Fallen IL Hooks
         private static readonly MethodInfo HCAttackFotF = typeof(HeroController).GetMethod("Attack", BindingFlags.Public | BindingFlags.Instance);
         private ILHook? ilHCAttackFotF;
@@ -273,46 +279,46 @@ namespace CharmChanger
         #region Notch Cost Changes
         private void ChangeNotchCosts(On.GameManager.orig_CalculateNotchesUsed orig, GameManager self)
         {
-            PlayerData.instance.SetInt("charmCost_1", LS.charm1NotchCost);
-            PlayerData.instance.SetInt("charmCost_2", LS.charm2NotchCost);
-            PlayerData.instance.SetInt("charmCost_3", LS.charm3NotchCost);
-            PlayerData.instance.SetInt("charmCost_4", LS.charm4NotchCost);
-            PlayerData.instance.SetInt("charmCost_5", LS.charm5NotchCost);
-            PlayerData.instance.SetInt("charmCost_6", LS.charm6NotchCost);
-            PlayerData.instance.SetInt("charmCost_7", LS.charm7NotchCost);
-            PlayerData.instance.SetInt("charmCost_8", LS.charm8NotchCost);
-            PlayerData.instance.SetInt("charmCost_9", LS.charm9NotchCost);
-            PlayerData.instance.SetInt("charmCost_10", LS.charm10NotchCost);
-            PlayerData.instance.SetInt("charmCost_11", LS.charm11NotchCost);
-            PlayerData.instance.SetInt("charmCost_12", LS.charm12NotchCost);
-            PlayerData.instance.SetInt("charmCost_13", LS.charm13NotchCost);
-            PlayerData.instance.SetInt("charmCost_14", LS.charm14NotchCost);
-            PlayerData.instance.SetInt("charmCost_15", LS.charm15NotchCost);
-            PlayerData.instance.SetInt("charmCost_16", LS.charm16NotchCost);
-            PlayerData.instance.SetInt("charmCost_17", LS.charm17NotchCost);
-            PlayerData.instance.SetInt("charmCost_18", LS.charm18NotchCost);
-            PlayerData.instance.SetInt("charmCost_19", LS.charm19NotchCost);
-            PlayerData.instance.SetInt("charmCost_20", LS.charm20NotchCost);
-            PlayerData.instance.SetInt("charmCost_21", LS.charm21NotchCost);
-            PlayerData.instance.SetInt("charmCost_22", LS.charm22NotchCost);
-            PlayerData.instance.SetInt("charmCost_23", LS.charm23NotchCost);
-            PlayerData.instance.SetInt("charmCost_24", LS.charm24NotchCost);
-            PlayerData.instance.SetInt("charmCost_25", LS.charm25NotchCost);
-            PlayerData.instance.SetInt("charmCost_26", LS.charm26NotchCost);
-            PlayerData.instance.SetInt("charmCost_27", LS.charm27NotchCost);
-            PlayerData.instance.SetInt("charmCost_28", LS.charm28NotchCost);
-            PlayerData.instance.SetInt("charmCost_29", LS.charm29NotchCost);
-            PlayerData.instance.SetInt("charmCost_30", LS.charm30NotchCost);
-            PlayerData.instance.SetInt("charmCost_31", LS.charm31NotchCost);
-            PlayerData.instance.SetInt("charmCost_32", LS.charm32NotchCost);
-            PlayerData.instance.SetInt("charmCost_33", LS.charm33NotchCost);
-            PlayerData.instance.SetInt("charmCost_34", LS.charm34NotchCost);
-            PlayerData.instance.SetInt("charmCost_35", LS.charm35NotchCost);
-            PlayerData.instance.SetInt("charmCost_36", LS.charm36NotchCost);
-            PlayerData.instance.SetInt("charmCost_37", LS.charm37NotchCost);
-            PlayerData.instance.SetInt("charmCost_38", LS.charm38NotchCost);
-            PlayerData.instance.SetInt("charmCost_39", LS.charm39NotchCost);
-            PlayerData.instance.SetInt("charmCost_40", LS.charm40NotchCost);
+            PlayerDataAccess.charmCost_1 = LS.charm1NotchCost;
+            PlayerDataAccess.charmCost_2 = LS.charm2NotchCost;
+            PlayerDataAccess.charmCost_3 = LS.charm3NotchCost;
+            PlayerDataAccess.charmCost_4 = LS.charm4NotchCost;
+            PlayerDataAccess.charmCost_5 = LS.charm5NotchCost;
+            PlayerDataAccess.charmCost_6 = LS.charm6NotchCost;
+            PlayerDataAccess.charmCost_7 = LS.charm7NotchCost;
+            PlayerDataAccess.charmCost_8 = LS.charm8NotchCost;
+            PlayerDataAccess.charmCost_9 = LS.charm9NotchCost;
+            PlayerDataAccess.charmCost_10 = LS.charm10NotchCost;
+            PlayerDataAccess.charmCost_11 = LS.charm11NotchCost;
+            PlayerDataAccess.charmCost_12 = LS.charm12NotchCost;
+            PlayerDataAccess.charmCost_13 = LS.charm13NotchCost;
+            PlayerDataAccess.charmCost_14 = LS.charm14NotchCost;
+            PlayerDataAccess.charmCost_15 = LS.charm15NotchCost;
+            PlayerDataAccess.charmCost_16 = LS.charm16NotchCost;
+            PlayerDataAccess.charmCost_17 = LS.charm17NotchCost;
+            PlayerDataAccess.charmCost_18 = LS.charm18NotchCost;
+            PlayerDataAccess.charmCost_19 = LS.charm19NotchCost;
+            PlayerDataAccess.charmCost_20 = LS.charm20NotchCost;
+            PlayerDataAccess.charmCost_21 = LS.charm21NotchCost;
+            PlayerDataAccess.charmCost_22 = LS.charm22NotchCost;
+            PlayerDataAccess.charmCost_23 = LS.charm23NotchCost;
+            PlayerDataAccess.charmCost_24 = LS.charm24NotchCost;
+            PlayerDataAccess.charmCost_25 = LS.charm25NotchCost;
+            PlayerDataAccess.charmCost_26 = LS.charm26NotchCost;
+            PlayerDataAccess.charmCost_27 = LS.charm27NotchCost;
+            PlayerDataAccess.charmCost_28 = LS.charm28NotchCost;
+            PlayerDataAccess.charmCost_29 = LS.charm29NotchCost;
+            PlayerDataAccess.charmCost_30 = LS.charm30NotchCost;
+            PlayerDataAccess.charmCost_31 = LS.charm31NotchCost;
+            PlayerDataAccess.charmCost_32 = LS.charm32NotchCost;
+            PlayerDataAccess.charmCost_33 = LS.charm33NotchCost;
+            PlayerDataAccess.charmCost_34 = LS.charm34NotchCost;
+            PlayerDataAccess.charmCost_35 = LS.charm35NotchCost;
+            PlayerDataAccess.charmCost_36 = LS.charm36NotchCost;
+            PlayerDataAccess.charmCost_37 = LS.charm37NotchCost;
+            PlayerDataAccess.charmCost_38 = LS.charm38NotchCost;
+            PlayerDataAccess.charmCost_39 = LS.charm39NotchCost;
+            PlayerDataAccess.charmCost_40 = LS.charm40NotchCost;
         }
         #endregion
 
@@ -329,11 +335,25 @@ namespace CharmChanger
         }
         #endregion
         #region Stalwart Shell Changes
-        // Invulnerability time and inaction time
-        private IEnumerator StalwartShellChanges(On.HeroController.orig_StartRecoil orig, HeroController self, CollisionSide impactSide, bool spawnDamageEffect, int damageAmount)
+        private void StalwartShellRecoil(ILContext il)
         {
+            ILCursor cursor = new ILCursor(il).Goto(0);
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => LS.regularRecoil);
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION_STAL"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => LS.stalwartShellRecoil);
+
+        }
+
+        private IEnumerator StalwartShellInvulnerability(On.HeroController.orig_StartRecoil orig, HeroController self, CollisionSide impactSide, bool spawnDamageEffect, int damageAmount)
+        {
+            // Could not figure out how to change to an IL hook
+
+            self.INVUL_TIME = LS.regularInvulnerability;
             self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability;
-            self.RECOIL_DURATION_STAL = LS.stalwartShellRecoil;
 
             return orig(self, impactSide, spawnDamageEffect, damageAmount);
         }
@@ -427,16 +447,21 @@ namespace CharmChanger
             {
                 cursor.GotoNext();
                 cursor.GotoNext();
-                cursor.EmitDelegate<Func<int, int>>(health => (PlayerData.instance.health <= LS.furyOfTheFallenHealth) ? 1 : 0);
+                cursor.EmitDelegate<Func<int, int>>(health => (PlayerDataAccess.health <= LS.furyOfTheFallenHealth) ? 1 : 0);
             }
         }
        #endregion
         #region Quick/Deep Focus Changes
         private void FocusSpeed(On.HutongGames.PlayMaker.Actions.SetFloatValue.orig_OnEnter orig, SetFloatValue self)
         {
-            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control")
+            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name == "Set Focus Speed")
             {
-                if (self.State.Name == "Set Focus Speed" && self.floatValue.Name == "Time Per MP Drain CH")
+                if (self.floatValue.Name == "Time Per MP Drain UnCH")
+                {
+                    self.floatValue.Value = LS.regularFocusTime / 33f;
+                }
+
+                else if (self.floatValue.Name == "Time Per MP Drain CH")
                 {
                     self.floatValue.Value = LS.quickFocusFocusTime / 33f;
                 }
@@ -444,12 +469,18 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void HealAmount(On.HutongGames.PlayMaker.Actions.SetIntValue.orig_OnEnter orig, SetIntValue self)
         {
-            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name.Contains("Set HP Amount") && self.State.ActiveActionIndex == 2)
+            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name.StartsWith("Set HP Amount"))
             {
-                self.intValue.Value = LS.deepFocusHealing;
+                if (self.State.ActiveActionIndex == 0)
+                {
+                    self.intValue.Value = LS.regularFocusHealing;
+                }
+                else if (self.State.ActiveActionIndex == 2)
+                {
+                    self.intValue.Value = LS.deepFocusHealing;
+                }
             }
 
             orig(self);
@@ -545,7 +576,7 @@ namespace CharmChanger
                 //self.Fsm.GameObject.transform.Find("Pt Normal").GetComponent<ParticleSystem>().startLifetime = LS.flukenestDefendersCrestDuration;
 
                 // Damage Rates
-                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().SetDamageInterval(PlayerData.instance.equippedCharm_19 ? LS.flukenestDefendersCrestShamanStoneDamageRate : LS.flukenestDefendersCrestDamageRate);
+                self.Fsm.GameObject.GetComponent<DamageEffectTicker>().SetDamageInterval(PlayerDataAccess.equippedCharm_19 ? LS.flukenestDefendersCrestShamanStoneDamageRate : LS.flukenestDefendersCrestDamageRate);
             }
 
             orig(self);
@@ -794,7 +825,7 @@ namespace CharmChanger
             // Cyclone Slash
             else if (self.Fsm.GameObject.name == "Cyclone Slash" && self.Fsm.Name == "Control Collider")
             {
-                self.setValue.Value = (LS.heavyBlowCycloneSlash && PlayerData.instance.equippedCharm_15) ? 1f + (float)(LS.heavyBlowCycloneSlashRecoil / 100f) : 1f;
+                self.setValue.Value = (LS.heavyBlowCycloneSlash && PlayerDataAccess.equippedCharm_15) ? 1f + (float)(LS.heavyBlowCycloneSlashRecoil / 100f) : 1f;
             }
 
             orig(self);
@@ -993,6 +1024,11 @@ namespace CharmChanger
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
 
+            // Regular
+            cursor.TryGotoNext(i => i.MatchLdcI4(11));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<int, int>>(soul => LS.regularSoul);
+
             // Soul Catcher
             cursor.TryGotoNext(i => i.MatchLdcI4(3));
             cursor.GotoNext();
@@ -1002,6 +1038,11 @@ namespace CharmChanger
             cursor.TryGotoNext(i => i.MatchLdcI4(8));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<int, int>>(soul => LS.soulEaterSoul);
+
+            // Regular Reserves
+            cursor.TryGotoNext(i => i.MatchLdcI4(6));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<int, int>>(soul => LS.regularReservesSoul);
 
             // Soul Catcher Reserves
             cursor.TryGotoNext(i => i.MatchLdcI4(2));
@@ -1056,7 +1097,7 @@ namespace CharmChanger
                 );
             cursor.GotoNext();
             cursor.GotoNext();
-            cursor.EmitDelegate<Func<int, int>>(health => (PlayerData.instance.health <= LS.furyOfTheFallenHealth) ? 1 : 0);
+            cursor.EmitDelegate<Func<int, int>>(health => (PlayerDataAccess.health <= LS.furyOfTheFallenHealth) ? 1 : 0);
 
             // Hatchling Damage Increase
             cursor.Goto(0);
@@ -1130,10 +1171,7 @@ namespace CharmChanger
         {
             orig(self);
 
-            if (PlayerData.instance.equippedCharm_26)
-            {
-                ReflectionHelper.SetField<HeroController, float>(self, "nailChargeTime", LS.nailmastersGloryChargeTime);
-            }
+            ReflectionHelper.SetField<HeroController, float>(self, "nailChargeTime", PlayerDataAccess.equippedCharm_26 ? LS.nailmastersGloryChargeTime : LS.regularChargeTime);
         }
         #endregion
         #region Joni's Blessing Changes
@@ -1199,6 +1237,12 @@ namespace CharmChanger
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
 
+            // Regular Soul
+            cursor.TryGotoNext(i => i.MatchLdcI4(33));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<int, int>>(soul => LS.regularDreamSoul);
+
+            // Charm Soul
             cursor.TryGotoNext(i => i.MatchLdcI4(66));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<int, int>>(soul => LS.dreamWielderSoulGain);
@@ -1230,10 +1274,15 @@ namespace CharmChanger
             cursor.GotoNext();
             cursor.EmitDelegate<Func<bool, bool>>(downDash =>  downDash && LS.dashmasterDownwardDash);
 
-            // Dash Cooldown
+            // Dashmaster Dash Cooldown
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("DASH_COOLDOWN_CH"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(cooldown => LS.dashmasterDashCooldown);
+
+            // Regular Dash Cooldown
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("DASH_COOLDOWN"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(cooldown => LS.regularDashCooldown);
         }
         #endregion
         #region Quick Slash Changes
@@ -1243,6 +1292,10 @@ namespace CharmChanger
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_COOLDOWN_TIME_CH"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(time => LS.quickSlashAttackCooldown);
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_COOLDOWN_TIME"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => LS.regularAttackCooldown);
         }
 
         private void QuickSlashAttackDuration(ILContext il)
@@ -1251,19 +1304,30 @@ namespace CharmChanger
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_DURATION_CH"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(time => Mathf.Min(0.35f, LS.quickSlashAttackCooldown + 0.03f));
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_DURATION"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => Mathf.Min(0.41f, LS.regularAttackCooldown - 0.06f));
         }
         #endregion
         #region Spell Twister Changes
         private void SpellTwisterSpellCost(On.HutongGames.PlayMaker.Actions.SetFsmInt.orig_OnEnter orig, SetFsmInt self)
         {
-            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Set Spell Cost" && self.State.Name == "Mage")
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Set Spell Cost")
             {
-                self.setValue.Value = LS.spellTwisterSpellCost;
+                if (self.State.Name == "Mage")
+                {
+                    self.setValue.Value = LS.spellTwisterSpellCost;
+                }
+
+                else if (self.State.Name == "Normal")
+                {
+                    self.setValue.Value = LS.regularSpellCost;
+                }
             }
 
             orig(self);
         }
-
         #endregion
         #region Grubberfly's Elegy Changes
         private void GrubberflysSizeScale(ILContext il)
@@ -1330,13 +1394,22 @@ namespace CharmChanger
         private void SprintmasterSpeed(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("WALK_SPEED"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(speed => LS.regularWalkSpeed);
+
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RUN_SPEED_CH_COMBO"));
             cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(speedCombo => LS.sprintmasterSpeedCombo);
+            cursor.EmitDelegate<Func<float, float>>(speed => LS.sprintmasterSpeedCombo);
 
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RUN_SPEED_CH"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(speed => LS.sprintmasterSpeed);
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RUN_SPEED"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(speed => LS.regularSpeed);
         }
         #endregion
         #region Dreamshield Changes
@@ -1747,7 +1820,7 @@ namespace CharmChanger
             charm39NotchCost = 2;
             charm40NotchCost = 2;
 
-            PlayerData.instance.charmSlotsFilled = 0;
+            PlayerDataAccess.charmSlotsFilled = 0;
         }
         #endregion
 
@@ -1766,16 +1839,24 @@ namespace CharmChanger
         }
         #endregion
         #region Stalwart Shell Settings
+        [InputFloatElement("Stalwart Shell Options", "Regular Invuln. Time", 0, 10)]
+        public float regularInvulnerability = 1.3f;
+
         [InputFloatElement("Stalwart Shell Options", "Invuln. Time", 0, 10)]
         public float stalwartShellInvulnerability = 1.75f;
 
         [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 2.9f)]
+        public float regularRecoil = 0.2f;
+
+        [InputFloatElement("Stalwart Shell Options", "Stalwart Recoil Time", 0, 2.9f)]
         public float stalwartShellRecoil = 0.08f;
 
         [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
         public void ResetStalwartShell()
         {
+            regularInvulnerability = 1.3f;
             stalwartShellInvulnerability = 1.75f;
+            regularRecoil = 0.2f;
             stalwartShellRecoil = 0.08f;
         }
         #endregion
@@ -1812,11 +1893,17 @@ namespace CharmChanger
         }
         #endregion
         #region Quick/Deep Focus Settings
+        [InputFloatElement("Quick/Deep Focus Options", "Focus Time", 0.001f, 2f)]
+        public float regularFocusTime = 0.891f;
+
         [InputFloatElement("Quick/Deep Focus Options", "Quick Focus Time", 0.001f, 2f)]
         public float quickFocusFocusTime = 0.594f;
 
         [InputIntElement("Quick/Deep Focus Options", "Deep Focus Added Time (%)", 0, 500)]
         public int deepFocusHealingTimeScale = 65;
+
+        [SliderIntElement("Quick/Deep Focus Options", "Focus Healing", 0, 13)]
+        public int regularFocusHealing = 1;
 
         [SliderIntElement("Quick/Deep Focus Options", "Deep Focus Healing", 0, 13)]
         public int deepFocusHealing = 2;
@@ -1824,8 +1911,10 @@ namespace CharmChanger
         [ButtonElement("Quick/Deep Focus Options", "Reset Defaults", "")]    
         public void ResetQuickAndDeepFocus()
         {
+            regularFocusTime = 0.891f;
             quickFocusFocusTime = 0.594f;
             deepFocusHealingTimeScale = 65;
+            regularFocusHealing = 1;
             deepFocusHealing = 2;
         }
         #endregion
@@ -2080,11 +2169,17 @@ namespace CharmChanger
         }
         #endregion
         #region Soul Catcher/Eater Settings
+        [InputIntElement("Soul Catcher/Eater Options", "Regular Soul", 0, 198)]
+        public int regularSoul = 11;
+
         [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 198)]
         public int soulCatcherSoul = 3;
 
         [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
         public int soulEaterSoul = 8;
+
+        [InputIntElement("Soul Catcher/Eater Options", "Regular Vessel Soul", 0, 198)]
+        public int regularReservesSoul = 6;
 
         [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 198)]
         public int soulCatcherReservesSoul = 2;
@@ -2095,8 +2190,10 @@ namespace CharmChanger
         [ButtonElement("Soul Catcher/Eater Options", "Reset Defaults", "")]
         public void ResetSoulCatcherAndEater()
         {
+            regularSoul = 11;
             soulCatcherSoul = 3;
             soulEaterSoul = 8;
+            regularReservesSoul = 6;
             soulCatcherReservesSoul = 2;
             soulEaterReservesSoul = 6;
         }
@@ -2158,12 +2255,16 @@ namespace CharmChanger
         }
         #endregion
         #region Nailmaster's Glory Settings
-        [InputFloatElement("Nailmaster's Glory Options", "Nail Art Charge Time", 0.01f, 5f)]
+        [InputFloatElement("Nailmaster's Glory Options", "Regular NArt Charge Time", 0.01f, 5f)]
+        public float regularChargeTime = 1.35f;
+
+        [InputFloatElement("Nailmaster's Glory Options", "Glory NArt Charge Time", 0.01f, 5f)]
         public float nailmastersGloryChargeTime = 0.75f;
 
         [ButtonElement("Nailmaster's Glory Options", "Reset Defaults", "")]
         public void ResetNailmastersGlory()
         {
+            regularChargeTime = 1.35f;
             nailmastersGloryChargeTime = 0.75f;
         }
         #endregion
@@ -2206,7 +2307,10 @@ namespace CharmChanger
         }
         #endregion
         #region Dream Wielder Settings
-        [InputIntElement("Dream Wielder Options", "Soul Gain", 0, 198)]
+        [InputIntElement("Dream Wielder Options", "Regular Soul Gain", 0, 198)]
+        public int regularDreamSoul = 33;
+
+        [InputIntElement("Dream Wielder Options", "Dream Wielder Soul Gain", 0, 198)]
         public int dreamWielderSoulGain = 66;
 
         [InputIntElement("Dream Wielder Options", "Essence Chance Low (1/X)", 1, 1000)]
@@ -2218,6 +2322,7 @@ namespace CharmChanger
         [ButtonElement("Dream Wielder Options", "Reset Defaults", "")]
         public void ResetDreamWielder()
         {
+            regularDreamSoul = 33;
             dreamWielderSoulGain = 66;
             dreamWielderEssenceChanceLow = 200;
             dreamWielderEssenceChanceHigh = 40;
@@ -2227,33 +2332,45 @@ namespace CharmChanger
         [BoolElement("Dashmaster Options", "Allows Downward Dash", "")]
         public bool dashmasterDownwardDash = true;
 
-        [InputFloatElement("Dashmaster Options", "Dash Cooldown", 0f, 10f)]
+        [InputFloatElement("Dashmaster Options", "Regular Dash Cooldown", 0f, 10f)]
+        public float regularDashCooldown = 0.6f;
+
+        [InputFloatElement("Dashmaster Options", "Dashmaster Dash Cooldown", 0f, 10f)]
         public float dashmasterDashCooldown = 0.4f;
 
         [ButtonElement("Dashmaster Options", "Reset Defaults", "")]
         public void ResetDashmaster()
         {
             dashmasterDownwardDash = true;
+            regularDashCooldown = 0.6f;
             dashmasterDashCooldown = 0.4f;
         }
         #endregion
         #region Quick Slash Settings
-        [InputFloatElement("Quick Slash Options", "Attack Cooldown", 0f, 2f)]
+        [InputFloatElement("Quick Slash Options", "Regular Attack Cooldown", 0f, 2f)]
+        public float regularAttackCooldown = 0.41f;
+
+        [InputFloatElement("Quick Slash Options", "Quick Slash Attack Cooldown", 0f, 2f)]
         public float quickSlashAttackCooldown = 0.25f;
 
         [ButtonElement("Quick Slash Options", "Reset Defaults", "")]
         public void ResetQuickSlash()
         {
+            regularAttackCooldown = 0.41f;
             quickSlashAttackCooldown = 0.25f;
         }
         #endregion
         #region Spell Twister Settings
-        [InputIntElement("Spell Twister Options", "Spell Cost", 0, 99)]
+        [InputIntElement("Spell Twister Options", "Regular Spell Cost", 0, 99)]
+        public int regularSpellCost = 33;
+
+        [InputIntElement("Spell Twister Options", "Spell Twister Spell Cost", 0, 99)]
         public int spellTwisterSpellCost = 24;
 
         [ButtonElement("Spell Twister Options", "Reset Defaults", "")]
         public void ResetSpellTwister()
         {
+            regularSpellCost = 33;
             spellTwisterSpellCost = 24;
         }
         #endregion
@@ -2294,7 +2411,13 @@ namespace CharmChanger
         }
         #endregion
         #region Sprintmaster Settings
-        [InputFloatElement("Sprintmaster Options", "Speed", 0f, 36f)]
+        [InputFloatElement("Sprintmaster Options", "Walk Speed", 0f, 36f)]
+        public float regularWalkSpeed = 6.0f;
+
+        [InputFloatElement("Sprintmaster Options", "Run Speed", 0f, 36f)]
+        public float regularSpeed = 8.3f;
+
+        [InputFloatElement("Sprintmaster Options", "Sprintmaster Speed", 0f, 36f)]
         public float sprintmasterSpeed = 10.0f;
 
         [InputFloatElement("Sprintmaster Options", "Dashmaster Speed", 0f, 36f)]
@@ -2303,6 +2426,8 @@ namespace CharmChanger
         [ButtonElement("Sprintmaster Options", "Reset Defaults", "")]
         public void ResetSprintmaster()
         {
+            regularWalkSpeed = 6.0f;
+            regularSpeed = 8.3f;
             sprintmasterSpeed = 10.0f;
             sprintmasterSpeedCombo = 11.5f;
         }
