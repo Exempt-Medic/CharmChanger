@@ -451,7 +451,7 @@ namespace CharmChanger
                 cursor.EmitDelegate<Func<int, int>>(health => (PlayerDataAccess.health <= LS.furyOfTheFallenHealth) ? 1 : 0);
             }
         }
-       #endregion
+        #endregion
         #region Quick/Deep Focus Changes
         private void FocusSpeed(On.HutongGames.PlayMaker.Actions.SetFloatValue.orig_OnEnter orig, SetFloatValue self)
         {
@@ -989,11 +989,14 @@ namespace CharmChanger
                 }
             }
 
-            // Shaman Stone
+            // Shade Soul
             else if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 0)
             {
-                self.x.Value = LS.regularSSSizeScaleX * 1.8f;
-                self.y.Value = LS.regularSSSizeScaleY * 1.8f;
+                if (self.State.ActiveActionIndex == 0)
+                {
+                    self.x.Value = PlayerDataAccess.equippedCharm_19 ? 1.8f : LS.regularSSSizeScaleX * 1.8f;
+                    self.y.Value = PlayerDataAccess.equippedCharm_19 ? 1.8f : LS.regularSSSizeScaleY * 1.8f;
+                }
             }
 
             orig(self);
@@ -1122,7 +1125,7 @@ namespace CharmChanger
         }
         private void ShamanStoneQMegaDamage(On.HutongGames.PlayMaker.Actions.FloatCompare.orig_OnEnter orig, FloatCompare self)
         {
-            if (self.Fsm.GameObject.name == "Q Mega" && self.Fsm.Name == "Hit Box Control")
+            if (self.Fsm.GameObject.name == "Q Mega" && self.Fsm.Name == "Hit Box Control" && self.State.Name == "Check Scale")
             {
                 self.Fsm.GameObject.transform.Find("Hit L").gameObject.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = PlayerDataAccess.equippedCharm_19 ? LS.shamanStoneDDarkDamageMega : LS.regularDDarkDamageMega;
                 self.Fsm.GameObject.transform.Find("Hit R").gameObject.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = PlayerDataAccess.equippedCharm_19 ? LS.shamanStoneDDarkDamageMega : LS.regularDDarkDamageMega;
@@ -1954,13 +1957,13 @@ namespace CharmChanger
         [InputFloatElement("Stalwart Shell Options", "Invuln. Time", 0, 10)]
         public float regularInvulnerability = 1.3f;
 
-        [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 2.9f)]
+        [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 1.0f)]
         public float regularRecoil = 0.2f;
 
         [InputFloatElement("Stalwart Shell Options", "Stalwart Invuln. Time", 0, 10)]
         public float stalwartShellInvulnerability = 1.75f;
 
-        [InputFloatElement("Stalwart Shell Options", "Stalwart Recoil Time", 0, 2.9f)]
+        [InputFloatElement("Stalwart Shell Options", "Stalwart Recoil Time", 0, 1.0f)]
         public float stalwartShellRecoil = 0.08f;
 
         [ButtonElement("Stalwart Shell Options", "Reset Defaults", "")]
@@ -2005,10 +2008,10 @@ namespace CharmChanger
         }
         #endregion
         #region Quick/Deep Focus Settings
-        [InputFloatElement("Quick/Deep Focus Options", "Focus Time", 0.001f, 2f)]
+        [InputFloatElement("Quick/Deep Focus Options", "Focus Time", 0.033f, 2f)]
         public float regularFocusTime = 0.891f;
 
-        [InputFloatElement("Quick/Deep Focus Options", "Quick Focus Time", 0.001f, 2f)]
+        [InputFloatElement("Quick/Deep Focus Options", "Quick Focus Time", 0.033f, 2f)]
         public float quickFocusFocusTime = 0.594f;
 
         [InputIntElement("Quick/Deep Focus Options", "Deep Focus Added Time (%)", 0, 500)]
