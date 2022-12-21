@@ -121,6 +121,7 @@ namespace CharmChanger
             On.HutongGames.PlayMaker.Actions.SetScale.OnEnter += ShamanStoneVengefulSpiritScaling;
             On.HutongGames.PlayMaker.Actions.FloatMultiply.OnEnter += ShamanStoneShadeSoulScaling;
             On.HutongGames.PlayMaker.Actions.SetFsmInt.OnEnter += ShamanStoneDamage;
+            On.HutongGames.PlayMaker.Actions.FloatCompare.OnEnter += ShamanStoneQMegaDamage;
             #endregion
             #region Soul Catcher/Eater Init
             ilSoulGain = new ILHook(soulGain, SoulCharmChanges);
@@ -801,31 +802,55 @@ namespace CharmChanger
         }
         private void HeavyBlowKnockback(On.HutongGames.PlayMaker.Actions.SetFsmFloat.orig_OnEnter orig, SetFsmFloat self)
         {
-            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Enemy Recoil Up" && self.State.Name == "Equipped")
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Enemy Recoil Up")
             {
-                // Wall Slash
-                if (self.gameObject.GameObject.Name == "Wall Slash")
+                if (self.State.Name == "Equipped")
                 {
-                    self.setValue.Value = (LS.heavyBlowWallSlash) ? 1f + (float)(LS.heavyBlowSlashRecoil / 100f) : 1f;
-                }
 
-                // Regular Slashes
-                else if (!self.gameObject.GameObject.Name.Contains("Great") && !self.gameObject.GameObject.Name.Contains("Hit "))
-                {
-                    self.setValue.Value = 1f + (float)(LS.heavyBlowSlashRecoil / 100f);
-                }
+                    // Wall Slash
+                    if (self.gameObject.GameObject.Name == "Wall Slash")
+                    {
+                        self.setValue.Value = LS.heavyBlowWallSlash ? LS.heavyBlowSlashRecoil : 1.0f;
+                    }
 
-                // Great Slash
-                else
+                    // Regular Slashes
+                    else if (!self.gameObject.GameObject.Name.StartsWith("Great") && !self.gameObject.GameObject.Name.StartsWith("Hit "))
+                    {
+                        self.setValue.Value = LS.heavyBlowSlashRecoil;
+                    }
+
+                    // Great Slash
+                    else
+                    {
+                        self.setValue.Value = LS.heavyBlowGreatSlashRecoil;
+                    }
+                }
+                else if (self.State.Name == "Unequipped")
                 {
-                    self.setValue.Value = 1f + (float)(LS.heavyBlowGreatSlashRecoil / 100f);
+                    // Wall Slash
+                    if (self.gameObject.GameObject.Name == "Wall Slash")
+                    {
+                        self.setValue.Value = LS.heavyBlowWallSlash ? LS.regularSlashRecoil : 1.0f;
+                    }
+
+                    // Regular Slashes
+                    else if (!self.gameObject.GameObject.Name.StartsWith("Great") && !self.gameObject.GameObject.Name.StartsWith("Hit "))
+                    {
+                        self.setValue.Value = LS.regularSlashRecoil;
+                    }
+
+                    // Great Slash
+                    else
+                    {
+                        self.setValue.Value = LS.regularGreatSlashRecoil;
+                    }
                 }
             }
 
             // Cyclone Slash
-            else if (self.Fsm.GameObject.name == "Cyclone Slash" && self.Fsm.Name == "Control Collider")
+            else if (self.Fsm.GameObject.name == "Cyclone Slash" && self.Fsm.Name == "Control Collider" && self.State.Name == "Init")
             {
-                self.setValue.Value = (LS.heavyBlowCycloneSlash && PlayerDataAccess.equippedCharm_15) ? 1f + (float)(LS.heavyBlowCycloneSlashRecoil / 100f) : 1f;
+                self.setValue.Value = LS.heavyBlowCycloneSlash ? (PlayerDataAccess.equippedCharm_15 ? LS.heavyBlowCycloneSlashRecoil : LS.regularCycloneSlashRecoil) : 1.0f;
             }
 
             orig(self);
@@ -949,15 +974,30 @@ namespace CharmChanger
         #region Shaman Stone Changes
         private void ShamanStoneVengefulSpiritScaling(On.HutongGames.PlayMaker.Actions.SetScale.orig_OnEnter orig, SetScale self)
         {
-            if (self.Fsm.GameObject.name == "Fireball(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 6)
+            if (self.Fsm.GameObject.name == "Fireball(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage")
             {
-                self.x.Value = LS.shamanStoneVSSizeScaleX;
-                self.y.Value = LS.shamanStoneVSSizeScaleY;
+                if (self.State.ActiveActionIndex == 0)
+                {
+                    self.x.Value = LS.regularVSSizeScaleX;
+                    self.y.Value = LS.regularVSSizeScaleY;
+                }
+
+                else if (self.State.ActiveActionIndex == 6)
+                {
+                    self.x.Value = LS.shamanStoneVSSizeScaleX;
+                    self.y.Value = LS.shamanStoneVSSizeScaleY;
+                }
+            }
+
+            // Shaman Stone
+            else if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 0)
+            {
+                self.x.Value = LS.regularSSSizeScaleX * 1.8f;
+                self.y.Value = LS.regularSSSizeScaleY * 1.8f;
             }
 
             orig(self);
         }
-
         private void ShamanStoneShadeSoulScaling(On.HutongGames.PlayMaker.Actions.FloatMultiply.orig_OnEnter orig, FloatMultiply self)
         {
             if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage")
@@ -966,7 +1006,7 @@ namespace CharmChanger
                 {
                     self.multiplyBy.Value = LS.shamanStoneSSSizeScaleX;
                 }
-                else
+                else if (self.floatVariable.Name == "Y Scale")
                 {
                     self.multiplyBy.Value = LS.shamanStoneSSSizeScaleY;
                 }
@@ -974,46 +1014,118 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void ShamanStoneDamage(On.HutongGames.PlayMaker.Actions.SetFsmInt.orig_OnEnter orig, SetFsmInt self)
         {
-            if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 5)
+            if (self.Fsm.GameObject.name == "Fireball(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage")
             {
-                self.setValue.Value = LS.shamanStoneSSDamage;
+                if (self.State.ActiveActionIndex == 2)
+                {
+                    self.setValue.Value = LS.regularVSDamage;
+                }
+                else if (self.State.ActiveActionIndex == 4)
+                {
+                    self.setValue.Value = LS.shamanStoneVSDamage;
+                }
             }
 
-            else if (self.Fsm.GameObject.name == "Fireball(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 4)
+            else if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage")
             {
-                self.setValue.Value = LS.shamanStoneVSDamage;
+                if (self.State.ActiveActionIndex == 3)
+                {
+                    self.setValue.Value = LS.regularSSDamage;
+                }
+                else if (self.State.ActiveActionIndex == 5)
+                {
+                    self.setValue.Value = LS.shamanStoneSSDamage;
+                }
             }
 
-            else if (self.Fsm.Name == "Set Damage" && self.State.Name == "Set Damage" && self.State.ActiveActionIndex == 2)
+            else if (self.Fsm.Name == "Set Damage" && self.State.Name == "Set Damage")
             {
                 if (self.Fsm.GameObject.transform.parent.gameObject.name == "Scr Heads")
                 {
-                    self.setValue.Value = LS.shamanStoneHWDamage;
+                    if (self.State.ActiveActionIndex == 0)
+                    {
+                        self.setValue.Value = LS.regularHWDamage;
+                    }
+                    else if (self.State.ActiveActionIndex == 2)
+                    {
+                        self.setValue.Value = LS.shamanStoneHWDamage;
+                    }
                 }
 
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Scr Heads 2")
                 {
-                    self.setValue.Value = LS.shamanStoneASDamage;
+                    if (self.State.ActiveActionIndex == 0)
+                    {
+                        self.setValue.Value = LS.regularASDamage;
+                    }
+                    else if (self.State.ActiveActionIndex == 2)
+                    {
+                        self.setValue.Value = LS.shamanStoneASDamage;
+                    }
                 }
 
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Q Slam")
                 {
-                    self.setValue.Value = LS.shamanStoneDDiveDamage;
+                    if (self.State.ActiveActionIndex == 0)
+                    {
+                        self.setValue.Value = LS.regularDDiveDamage;
+                    }
+                    else if (self.State.ActiveActionIndex == 2)
+                    {
+                        self.setValue.Value = LS.shamanStoneDDiveDamage;
+                    }
                 }
 
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Q Slam 2")
                 {
-                    self.setValue.Value = LS.shamanStoneDDarkDamage;
+                    if (self.Fsm.GameObject.name == "Hit L")
+                    {
+                        if (self.State.ActiveActionIndex == 0)
+                        {
+                            self.setValue.Value = LS.regularDDarkDamageL;
+                        }
+                        else if (self.State.ActiveActionIndex == 2)
+                        {
+                            self.setValue.Value = LS.shamanStoneDDarkDamageL;
+                        }
+                    }
+                    else if (self.Fsm.GameObject.name == "Hit R")
+                    {
+                        if (self.State.ActiveActionIndex == 0)
+                        {
+                            self.setValue.Value = LS.regularDDarkDamageR;
+                        }
+                        else if (self.State.ActiveActionIndex == 2)
+                        {
+                            self.setValue.Value = LS.shamanStoneDDarkDamageR;
+                        }
+                    }
                 }
 
                 else if (self.Fsm.GameObject.name == "Q Fall Damage")
                 {
-                    self.setValue.Value = LS.shamanStoneDiveDamage;
+                    if (self.State.ActiveActionIndex == 0)
+                    {
+                        self.setValue.Value = LS.regularDiveDamage;
+                    }
+                    else if (self.State.ActiveActionIndex == 2)
+                    {
+                        self.setValue.Value = LS.shamanStoneDiveDamage;
+                    }
                 }
 
+            }
+
+            orig(self);
+        }
+        private void ShamanStoneQMegaDamage(On.HutongGames.PlayMaker.Actions.FloatCompare.orig_OnEnter orig, FloatCompare self)
+        {
+            if (self.Fsm.GameObject.name == "Q Mega" && self.Fsm.Name == "Hit Box Control")
+            {
+                self.Fsm.GameObject.transform.Find("Hit L").gameObject.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = PlayerDataAccess.equippedCharm_19 ? LS.shamanStoneDDarkDamageMega : LS.regularDDarkDamageMega;
+                self.Fsm.GameObject.transform.Find("Hit R").gameObject.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = PlayerDataAccess.equippedCharm_19 ? LS.shamanStoneDDarkDamageMega : LS.regularDDarkDamageMega;
             }
 
             orig(self);
@@ -1839,14 +1951,14 @@ namespace CharmChanger
         }
         #endregion
         #region Stalwart Shell Settings
-        [InputFloatElement("Stalwart Shell Options", "Regular Invuln. Time", 0, 10)]
-        public float regularInvulnerability = 1.3f;
-
         [InputFloatElement("Stalwart Shell Options", "Invuln. Time", 0, 10)]
-        public float stalwartShellInvulnerability = 1.75f;
+        public float regularInvulnerability = 1.3f;
 
         [InputFloatElement("Stalwart Shell Options", "Recoil Time", 0, 2.9f)]
         public float regularRecoil = 0.2f;
+
+        [InputFloatElement("Stalwart Shell Options", "Stalwart Invuln. Time", 0, 10)]
+        public float stalwartShellInvulnerability = 1.75f;
 
         [InputFloatElement("Stalwart Shell Options", "Stalwart Recoil Time", 0, 2.9f)]
         public float stalwartShellRecoil = 0.08f;
@@ -2037,20 +2149,29 @@ namespace CharmChanger
         }
         #endregion
         #region Heavy Blow Settings
-        [BoolElement("Heavy Blow Options", "Works with Wall Slash", "")]
+        [BoolElement("Heavy Blow Options", "Recoil affects Wall Slash", "")]
         public bool heavyBlowWallSlash = false;
 
-        [BoolElement("Heavy Blow Options", "Works with Cyclone Slash", "")]
+        [BoolElement("Heavy Blow Options", "Recoil affects Cyclone Slash", "")]
         public bool heavyBlowCycloneSlash = false;
 
-        [InputIntElement("Heavy Blow Options", "Knockback Increase (%)", 0, 500)]
-        public int heavyBlowSlashRecoil = 75;
+        [InputFloatElement("Heavy Blow Options", "Knockback Mult.", 0f, 5f)]
+        public float regularSlashRecoil = 1.0f;
 
-        [InputIntElement("Heavy Blow Options", "Great Slash Increase (%)", 0, 500)]
-        public int heavyBlowGreatSlashRecoil = 33;
+        [InputFloatElement("Heavy Blow Options", "Great Slash Knockback Mult.", 0f, 5f)]
+        public float regularGreatSlashRecoil = 1.5f;
 
-        [InputIntElement("Heavy Blow Options", "Cyclone Slash Increase (%)", 0, 500)]
-        public int heavyBlowCycloneSlashRecoil = 25;
+        [InputFloatElement("Heavy Blow Options", "Cyclone Slash Knockback Mult.", 0f, 5f)]
+        public float regularCycloneSlashRecoil = 1.0f;
+
+        [InputFloatElement("Heavy Blow Options", "HB Knockback Mult.", 0f, 5f)]
+        public float heavyBlowSlashRecoil = 1.75f;
+
+        [InputFloatElement("Heavy Blow Options", "HB Great Slash Mult.", 0f, 5f)]
+        public float heavyBlowGreatSlashRecoil = 2.0f;
+
+        [InputFloatElement("Heavy Blow Options", "HB Cyclone Slash Mult.", 0f, 5f)]
+        public float heavyBlowCycloneSlashRecoil = 1.0f;
 
         [SliderIntElement("Heavy Blow Options", "Stagger Reduction", 0, 20)]
         public int heavyBlowStagger = 1;
@@ -2063,9 +2184,12 @@ namespace CharmChanger
         {
             heavyBlowWallSlash = false;
             heavyBlowCycloneSlash = false;
-            heavyBlowSlashRecoil = 75;
-            heavyBlowGreatSlashRecoil = 33;
-            heavyBlowCycloneSlashRecoil = 25;
+            regularSlashRecoil = 1.0f;
+            regularGreatSlashRecoil = 1.5f;
+            regularCycloneSlashRecoil = 1.0f;
+            heavyBlowSlashRecoil = 1.75f;
+            heavyBlowGreatSlashRecoil = 2.0f;
+            heavyBlowCycloneSlashRecoil = 1.0f;
             heavyBlowStagger = 1;
             heavyBlowStaggerCombo = 1;
         }
@@ -2120,69 +2244,129 @@ namespace CharmChanger
         #endregion
         #region Shaman Stone Settings
         [InputFloatElement("Shaman Stone Options", "Vengeful Spirit X Scale", 0f, 5f)]
-        public float shamanStoneVSSizeScaleX = 1.3f;
+        public float regularVSSizeScaleX = 1.0f;
 
         [InputFloatElement("Shaman Stone Options", "Vengeful Spirit Y Scale", 0f, 5f)]
-        public float shamanStoneVSSizeScaleY = 1.6f;
+        public float regularVSSizeScaleY = 1.0f;
 
         [InputFloatElement("Shaman Stone Options", "Shade Soul X Scale", 0f, 5f)]
-        public float shamanStoneSSSizeScaleX = 1.3f;
+        public float regularSSSizeScaleX = 1.0f;
 
         [InputFloatElement("Shaman Stone Options", "Shade Soul Y Scale", 0f, 5f)]
+        public float regularSSSizeScaleY = 1.0f;
+
+        [InputFloatElement("Shaman Stone Options", "SS Vengeful Spirit X Scale", 0f, 5f)]
+        public float shamanStoneVSSizeScaleX = 1.3f;
+
+        [InputFloatElement("Shaman Stone Options", "SS Vengeful Spirit Y Scale", 0f, 5f)]
+        public float shamanStoneVSSizeScaleY = 1.6f;
+
+        [InputFloatElement("Shaman Stone Options", "SS Shade Soul X Scale", 0f, 5f)]
+        public float shamanStoneSSSizeScaleX = 1.3f;
+
+        [InputFloatElement("Shaman Stone Options", "SS Shade Soul Y Scale", 0f, 5f)]
         public float shamanStoneSSSizeScaleY = 1.6f;
 
         [InputIntElement("Shaman Stone Options", "Vengeful Spirit Damage", 0, 100)]
-        public int shamanStoneVSDamage = 20;
+        public int regularVSDamage = 15;
 
         [InputIntElement("Shaman Stone Options", "Shade Soul Damage", 0, 100)]
-        public int shamanStoneSSDamage = 40;
+        public int regularSSDamage = 30;
 
         [InputIntElement("Shaman Stone Options", "Howling Wraiths Damage", 0, 100)]
-        public int shamanStoneHWDamage = 20;
+        public int regularHWDamage = 13;
 
         [InputIntElement("Shaman Stone Options", "Abyss Shriek Damage", 0, 100)]
-        public int shamanStoneASDamage = 40;
+        public int regularASDamage = 20;
 
         [InputIntElement("Shaman Stone Options", "Dive Contact Damage", 0, 100)]
-        public int shamanStoneDiveDamage = 23;
+        public int regularDiveDamage = 15;
 
         [InputIntElement("Shaman Stone Options", "Desolate Dive Damage", 0, 100)]
+        public int regularDDiveDamage = 20;
+
+        [InputIntElement("Shaman Stone Options", "Descending Dark Damage L", 0, 100)]
+        public int regularDDarkDamageL = 35;
+
+        [InputIntElement("Shaman Stone Options", "Descending Dark Damage R", 0, 100)]
+        public int regularDDarkDamageR = 30;
+
+        [InputIntElement("Shaman Stone Options", "Descending Dark Final Damage", 0, 100)]
+        public int regularDDarkDamageMega = 15;
+
+        [InputIntElement("Shaman Stone Options", "SS Vengeful Spirit Damage", 0, 100)]
+        public int shamanStoneVSDamage = 20;
+
+        [InputIntElement("Shaman Stone Options", "SS Shade Soul Damage", 0, 100)]
+        public int shamanStoneSSDamage = 40;
+
+        [InputIntElement("Shaman Stone Options", "SS Howling Wraiths Damage", 0, 100)]
+        public int shamanStoneHWDamage = 20;
+
+        [InputIntElement("Shaman Stone Options", "SS Abyss Shriek Damage", 0, 100)]
+        public int shamanStoneASDamage = 30;
+
+        [InputIntElement("Shaman Stone Options", "SS Dive Contact Damage", 0, 100)]
+        public int shamanStoneDiveDamage = 23;
+
+        [InputIntElement("Shaman Stone Options", "SS Desolate Dive Damage", 0, 100)]
         public int shamanStoneDDiveDamage = 30;
 
-        [InputIntElement("Shaman Stone Options", "Descending Dark Damage", 0, 100)]
-        public int shamanStoneDDarkDamage = 50;
+        [InputIntElement("Shaman Stone Options", "SS Descending Dark Damage L", 0, 100)]
+        public int shamanStoneDDarkDamageL = 50;
+
+        [InputIntElement("Shaman Stone Options", "SS Descending Dark Damage R", 0, 100)]
+        public int shamanStoneDDarkDamageR = 50;
+
+        [InputIntElement("Shaman Stone Options", "SS Descending Dark Final Damage", 0, 100)]
+        public int shamanStoneDDarkDamageMega = 15;
 
         [ButtonElement("Shaman Stone Options", "Reset Defaults", "")]
         public void ResetShamanStone()
         {
+            regularVSSizeScaleX = 1.0f;
+            regularVSSizeScaleY = 1.0f;
+            regularSSSizeScaleX = 1.0f;
+            regularSSSizeScaleY = 1.0f;
             shamanStoneVSSizeScaleX = 1.3f;
             shamanStoneVSSizeScaleY = 1.6f;
             shamanStoneSSSizeScaleX = 1.3f;
             shamanStoneSSSizeScaleY = 1.6f;
+            regularVSDamage = 15;
+            regularSSDamage = 30;
+            regularHWDamage = 13;
+            regularASDamage = 20;
+            regularDiveDamage = 15;
+            regularDDiveDamage = 20;
+            regularDDarkDamageL = 35;
+            regularDDarkDamageR = 30;
+            regularDDarkDamageMega = 15;
             shamanStoneVSDamage = 20;
             shamanStoneSSDamage = 40;
             shamanStoneHWDamage = 20;
-            shamanStoneASDamage = 40;
+            shamanStoneASDamage = 30;
             shamanStoneDiveDamage = 23;
             shamanStoneDDiveDamage = 30;
-            shamanStoneDDarkDamage = 50;
+            shamanStoneDDarkDamageL = 50;
+            shamanStoneDDarkDamageR = 50;
+            shamanStoneDDarkDamageMega = 15;
         }
         #endregion
         #region Soul Catcher/Eater Settings
-        [InputIntElement("Soul Catcher/Eater Options", "Regular Soul", 0, 198)]
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Gained", 0, 198)]
         public int regularSoul = 11;
+
+        [InputIntElement("Soul Catcher/Eater Options", "Vessel Soul Gained", 0, 198)]
+        public int regularReservesSoul = 6;
 
         [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Soul", 0, 198)]
         public int soulCatcherSoul = 3;
 
-        [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
-        public int soulEaterSoul = 8;
-
-        [InputIntElement("Soul Catcher/Eater Options", "Regular Vessel Soul", 0, 198)]
-        public int regularReservesSoul = 6;
-
         [InputIntElement("Soul Catcher/Eater Options", "Soul Catcher Vessel Soul", 0, 198)]
         public int soulCatcherReservesSoul = 2;
+
+        [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Soul", 0, 198)]
+        public int soulEaterSoul = 8;
 
         [InputIntElement("Soul Catcher/Eater Options", "Soul Eater Vessel Soul", 0, 198)]
         public int soulEaterReservesSoul = 6;
@@ -2255,7 +2439,7 @@ namespace CharmChanger
         }
         #endregion
         #region Nailmaster's Glory Settings
-        [InputFloatElement("Nailmaster's Glory Options", "Regular NArt Charge Time", 0.01f, 5f)]
+        [InputFloatElement("Nailmaster's Glory Options", "Nail Art Charge Time", 0.01f, 5f)]
         public float regularChargeTime = 1.35f;
 
         [InputFloatElement("Nailmaster's Glory Options", "Glory NArt Charge Time", 0.01f, 5f)]
@@ -2307,7 +2491,7 @@ namespace CharmChanger
         }
         #endregion
         #region Dream Wielder Settings
-        [InputIntElement("Dream Wielder Options", "Regular Soul Gain", 0, 198)]
+        [InputIntElement("Dream Wielder Options", "Soul Gain", 0, 198)]
         public int regularDreamSoul = 33;
 
         [InputIntElement("Dream Wielder Options", "Dream Wielder Soul Gain", 0, 198)]
@@ -2332,7 +2516,7 @@ namespace CharmChanger
         [BoolElement("Dashmaster Options", "Allows Downward Dash", "")]
         public bool dashmasterDownwardDash = true;
 
-        [InputFloatElement("Dashmaster Options", "Regular Dash Cooldown", 0f, 10f)]
+        [InputFloatElement("Dashmaster Options", "Dash Cooldown", 0f, 10f)]
         public float regularDashCooldown = 0.6f;
 
         [InputFloatElement("Dashmaster Options", "Dashmaster Dash Cooldown", 0f, 10f)]
@@ -2347,7 +2531,7 @@ namespace CharmChanger
         }
         #endregion
         #region Quick Slash Settings
-        [InputFloatElement("Quick Slash Options", "Regular Attack Cooldown", 0f, 2f)]
+        [InputFloatElement("Quick Slash Options", "Attack Cooldown", 0f, 2f)]
         public float regularAttackCooldown = 0.41f;
 
         [InputFloatElement("Quick Slash Options", "Quick Slash Attack Cooldown", 0f, 2f)]
@@ -2361,7 +2545,7 @@ namespace CharmChanger
         }
         #endregion
         #region Spell Twister Settings
-        [InputIntElement("Spell Twister Options", "Regular Spell Cost", 0, 99)]
+        [InputIntElement("Spell Twister Options", "Spell Cost", 0, 99)]
         public int regularSpellCost = 33;
 
         [InputIntElement("Spell Twister Options", "Spell Twister Spell Cost", 0, 99)]
