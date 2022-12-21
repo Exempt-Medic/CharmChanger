@@ -1940,7 +1940,7 @@ namespace CharmChanger
         #endregion
 
         #region Grubsong Settings
-        [InputIntElement("Grubsong Options", "Soul", 0, 198, ElementDesc = "description goes here")]
+        [InputIntElement("Grubsong Options", "Soul", 0, 198)]
         public int grubsongDamageSoul = 15;
 
         [InputIntElement("Grubsong Options", "Grubberfly's Soul", 0, 198)]
