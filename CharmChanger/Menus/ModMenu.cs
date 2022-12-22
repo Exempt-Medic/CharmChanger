@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using MenuButton = Satchel.BetterMenus.MenuButton;
 using InputField = Satchel.BetterMenus.InputField;
-using UnityEngine.UIElements;
 
 namespace CharmChanger;
 public static class ModMenu

@@ -58,7 +58,7 @@ namespace CharmChanger
             #endregion
 
             #region Grubsong Init
-            On.HeroController.TakeDamage += GrubsongSoulChanges;
+            ilHCTakeDamageGrubsong = new ILHook(HCTakeDamageGrubsong, GrubsongSoulChanges);
             #endregion
             #region Stalwart Shell Init
             On.HeroController.StartRecoil += StalwartShellInvulnerability;
@@ -138,7 +138,7 @@ namespace CharmChanger
             ilHMDie = new ILHook(HMDie, GreedGeoIncrease);
             #endregion
             #region Nailmaster's Glory Init
-            On.HeroController.CharmUpdate += NailArtChargeTime;
+            ilOrigCharmUpdateNailmastersGlory = new ILHook(origCharmUpdateNailmastersGlory, NailArtChargeTimes);
             #endregion
             #region Joni's Blessing Init
             ilOrigCharmUpdate = new ILHook(origCharmUpdate, JonisScaling);
@@ -202,6 +202,10 @@ namespace CharmChanger
         }
         #endregion
 
+        #region Grubsong IL Hooks
+        private static readonly MethodInfo HCTakeDamageGrubsong = typeof(HeroController).GetMethod("TakeDamage", BindingFlags.Public | BindingFlags.Instance);
+        private ILHook? ilHCTakeDamageGrubsong;
+        #endregion
         #region Stalwart Shell IL Hooks
         private static readonly MethodInfo origUpdate = typeof(HeroController).GetMethod("orig_Update", BindingFlags.NonPublic | BindingFlags.Instance);
         private ILHook? ilorigUpdate;
@@ -242,6 +246,10 @@ namespace CharmChanger
         private static readonly MethodInfo HMDie = typeof(HealthManager).GetMethod("Die", BindingFlags.Public | BindingFlags.Instance);
         private ILHook? ilHMDie;
         #endregion
+        #region Nailmaster's Glory IL Hooks
+        private static readonly MethodInfo origCharmUpdateNailmastersGlory = typeof(HeroController).GetMethod("orig_CharmUpdate", BindingFlags.Public | BindingFlags.Instance);
+        private ILHook? ilOrigCharmUpdateNailmastersGlory;
+        #endregion
         #region Joni's Blessing IL Hooks
         private static readonly MethodInfo origCharmUpdate = typeof(HeroController).GetMethod("orig_CharmUpdate", BindingFlags.Public | BindingFlags.Instance);
         private ILHook? ilOrigCharmUpdate;
@@ -276,6 +284,7 @@ namespace CharmChanger
         private static readonly MethodInfo HCTakeDamage = typeof(HeroController).GetMethod("TakeDamage", BindingFlags.Public | BindingFlags.Instance);
         private ILHook? ilHCTakeDamage;
         #endregion
+
 
         #region Notch Cost Changes
         private void ChangeNotchCosts(On.GameManager.orig_CalculateNotchesUsed orig, GameManager self)
@@ -324,15 +333,17 @@ namespace CharmChanger
         #endregion
 
         #region Grubsong Changes
-        private void GrubsongSoulChanges(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
+        private void GrubsongSoulChanges(ILContext il)
         {
-            // Grubsong
-            self.GRUB_SOUL_MP = LS.grubsongDamageSoul;
+            ILCursor cursor = new ILCursor(il).Goto(0);
 
-            // Grubsong + Grubberfly's
-            self.GRUB_SOUL_MP_COMBO = LS.grubsongDamageSoulCombo;
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("GRUB_SOUL_MP_COMBO"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<int, int>>(soul => LS.grubsongDamageSoulCombo);
 
-            orig(self, go, damageSide, damageAmount, hazardType);
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("GRUB_SOUL_MP"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<int, int>>(soul => LS.grubsongDamageSoul);
         }
         #endregion
         #region Stalwart Shell Changes
@@ -495,7 +506,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         #endregion
         #region Lifeblood Heart/Core Changes
         // Lifeblood Granted
@@ -963,8 +973,7 @@ namespace CharmChanger
                 {
                     self.Fsm.GameObject.transform.Find("Pt Normal").gameObject.GetComponent<ParticleSystem>().startLifetime = LS.sporeShroomCloudDuration;
                 }
-
-                else
+                else if (self.State.Name == "Deep")
                 {
                     self.Fsm.GameObject.transform.Find("Pt Deep").gameObject.GetComponent<ParticleSystem>().startLifetime = LS.sporeShroomCloudDuration;
                 }
@@ -1282,11 +1291,17 @@ namespace CharmChanger
         }
         #endregion
         #region Nailmaster's Glory Changes
-        private void NailArtChargeTime(On.HeroController.orig_CharmUpdate orig, HeroController self)
+        private void NailArtChargeTimes(ILContext il)
         {
-            orig(self);
+            ILCursor cursor = new ILCursor(il).Goto(0);
 
-            ReflectionHelper.SetField<HeroController, float>(self, "nailChargeTime", PlayerDataAccess.equippedCharm_26 ? LS.nailmastersGloryChargeTime : LS.regularChargeTime);
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_CHARM"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => LS.nailmastersGloryChargeTime);
+
+            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_DEFAULT"));
+            cursor.GotoNext();
+            cursor.EmitDelegate<Func<float, float>>(time => LS.regularChargeTime);
         }
         #endregion
         #region Joni's Blessing Changes
@@ -1461,7 +1476,7 @@ namespace CharmChanger
 
             orig(self, go, damageSide, damageAmount, hazardType);
 
-            ReflectionHelper.SetField<HeroController, bool>(self, "joniBeam", (joniBeamChecker != ReflectionHelper.GetField<HeroController, bool>(self, "joniBeam")) && !LS.grubberflysElegyJoniBeamDamageBool);
+            ReflectionHelper.SetField<HeroController, bool>(self, "joniBeam", (joniBeamChecker == ReflectionHelper.GetField<HeroController, bool>(self, "joniBeam")) ? joniBeamChecker : !LS.grubberflysElegyJoniBeamDamageBool);
         }
         private void GrubberflysElegyFotFScaling(On.HutongGames.PlayMaker.Actions.FloatMultiply.orig_OnEnter orig, FloatMultiply self)
         {
