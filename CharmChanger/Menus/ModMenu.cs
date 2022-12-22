@@ -68,6 +68,7 @@ public static class ModMenu
                     CharmChangerMod.LS.ResetWeaversong();
                     CharmChangerMod.LS.ResetGrimmchild();
                     CharmChangerMod.LS.ResetCarefreeMelody();
+
                     CharmChangerMod.LS.ResetNotchCosts();
                 })
         });
