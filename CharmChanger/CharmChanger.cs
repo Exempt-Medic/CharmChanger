@@ -1,26 +1,22 @@
 using UnityEngine;
 using Modding;
 using System;
-using System.Collections;
-using System.Reflection;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using MonoMod.RuntimeDetour;
 using MonoMod.Cil;
 using Satchel;
 using SFCore.Utils;
 using HKMirror;
 using HKMirror.Reflection.SingletonClasses;
+using HKMirror.Hooks.ILHooks;
 
 namespace CharmChanger
 {
     public class CharmChangerMod : Mod, ICustomMenuMod, ILocalSettings<LocalSettings>
     {
         #region Boilerplate
-
         private static CharmChangerMod? _instance;
-
         internal static CharmChangerMod Instance
         {
             get
@@ -32,7 +28,6 @@ namespace CharmChanger
                 return _instance;
             }
         }
-
         public static LocalSettings LS { get; private set; } = new();
         public void OnLoadLocal(LocalSettings s) => LS = s;
         public LocalSettings OnSaveLocal() => LS;
@@ -62,8 +57,28 @@ namespace CharmChanger
             IL.HeroController.TakeDamage += GrubsongSoulChanges;
             #endregion
             #region Stalwart Shell Init
-            On.HeroController.StartRecoil += StalwartShellInvulnerability;
-            ilorigUpdate = new ILHook(origUpdate, StalwartShellRecoil);
+            ILHeroController.orig_Update += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.regularRecoil);
+
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION_STAL"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.stalwartShellRecoil);
+            };
+            ILHeroController.StartRecoil += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("INVUL_TIME_STAL"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.stalwartShellInvulnerability);
+
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("INVUL_TIME"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.regularInvulnerability);
+            };
             #endregion
             #region Baldur Shell Init
             On.BeginRecoil.OnEnter += BaldurShellKnockback;
@@ -81,12 +96,22 @@ namespace CharmChanger
             On.HutongGames.PlayMaker.Actions.FloatMultiply.OnEnter += DeepFocusScaling;
             #endregion
             #region Lifeblood Heart/Core Init
-            ilorigUpdateBlueHealth = new ILHook(origUpdateBlueHealth, LifebloodChanges);
+            ILPlayerData.orig_UpdateBlueHealth += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.TryGotoNext(i => i.MatchLdcI4(2));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<int, int>>(Lifeblood => LS.lifebloodHeartLifeblood);
+
+                cursor.TryGotoNext(i => i.MatchLdcI4(4));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<int, int>>(Lifeblood => LS.lifebloodCoreLifeblood);
+            };
             #endregion
             #region Defender's Crest Init
-            IL.ShopItemStats.OnEnable += DefendersCrestCostReduction;
             On.HutongGames.PlayMaker.Actions.Wait.OnEnter += DungCloudSettings;
             On.HutongGames.PlayMaker.Actions.SpawnObjectFromGlobalPoolOverTime.OnUpdate += CloudFrequency;
+            IL.ShopItemStats.OnEnable += DefendersCrestCostReduction;
             #endregion
             #region Flukenest Init
             On.HutongGames.PlayMaker.Actions.FlingObjectsFromGlobalPool.OnEnter += FlukeCount;
@@ -110,7 +135,14 @@ namespace CharmChanger
             #region Sharp Shadow Init
             On.HutongGames.PlayMaker.Actions.FloatMultiplyV2.OnEnter += SharpShadowDashMasterDamageScaling;
             On.HutongGames.PlayMaker.Actions.ConvertIntToFloat.OnEnter += SharpShadowBaseDamage;
-            ilorigDashVector = new ILHook(origDashVector, SharpShadowSpeed);
+            ILHeroController.OrigDashVector += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("DASH_SPEED_SHARP"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(Speed => LS.SharpShadowDashSpeed);
+            };
             #endregion
             #region Spore Shroom Init
             On.HutongGames.PlayMaker.Actions.Wait.OnEnter += OnWaitAction2;
@@ -138,10 +170,26 @@ namespace CharmChanger
             IL.HealthManager.Die += GreedGeoIncrease;
             #endregion
             #region Nailmaster's Glory Init
-            ilOrigCharmUpdateNailmastersGlory = new ILHook(origCharmUpdateNailmastersGlory, NailArtChargeTimes);
+            ILHeroController.orig_CharmUpdate += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_CHARM"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.nailmastersGloryChargeTime);
+
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_DEFAULT"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.regularChargeTime);
+            };
             #endregion
             #region Joni's Blessing Init
-            ilOrigCharmUpdate = new ILHook(origCharmUpdate, JonisScaling);
+            ILHeroController.orig_CharmUpdate += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.GotoNext(i => i.MatchLdcR4(1.4f));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(scale => 1f + (float)(LS.jonisBlessingScaling / 100f));
+            };
             #endregion
             #region Shape Of Unn Init
             On.HutongGames.PlayMaker.Actions.SetFloatValue.OnEnter += SlugSpeeds;
@@ -158,7 +206,17 @@ namespace CharmChanger
             #endregion
             #region Quick Slash Init
             IL.HeroController.Attack += QuickSlashAttackDuration;
-            ilOrigDoAttack = new ILHook(origDoAttack, QuickSlashAttackCooldown);
+            ILHeroController.orig_DoAttack += (il) =>
+            {
+                ILCursor cursor = new ILCursor(il).Goto(0);
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_COOLDOWN_TIME_CH"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.quickSlashAttackCooldown);
+
+                cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("ATTACK_COOLDOWN_TIME"));
+                cursor.GotoNext();
+                cursor.EmitDelegate<Func<float, float>>(time => LS.regularAttackCooldown);
+            };
             #endregion
             #region Spell Twister Init
             On.HutongGames.PlayMaker.Actions.SetFsmInt.OnEnter += SpellTwisterSpellCost;
@@ -203,41 +261,10 @@ namespace CharmChanger
         }
         #endregion
 
-        #region IL Hooks
-        #region Stalwart Shell IL Hooks
-        private static readonly MethodInfo origUpdate = typeof(HeroController).GetMethod("orig_Update", BindingFlags.NonPublic | BindingFlags.Instance);
-        private ILHook? ilorigUpdate;
-        #endregion
-        #region Lifeblood Heart/Core IL Hooks
-        private static readonly MethodInfo origUpdateBlueHealth = typeof(PlayerData).GetMethod("orig_UpdateBlueHealth", BindingFlags.Public | BindingFlags.Instance);
-        private ILHook? ilorigUpdateBlueHealth;
-        #endregion
-        #region Sharp Shadow IL Hooks
-        private static readonly MethodInfo origDashVector = typeof(HeroController).GetMethod("OrigDashVector", BindingFlags.NonPublic | BindingFlags.Instance);
-        private ILHook? ilorigDashVector;
-        #endregion
-        #region Nailmaster's Glory IL Hooks
-        private static readonly MethodInfo origCharmUpdateNailmastersGlory = typeof(HeroController).GetMethod("orig_CharmUpdate", BindingFlags.Public | BindingFlags.Instance);
-        private ILHook? ilOrigCharmUpdateNailmastersGlory;
-        #endregion
-        #region Joni's Blessing IL Hooks
-        private static readonly MethodInfo origCharmUpdate = typeof(HeroController).GetMethod("orig_CharmUpdate", BindingFlags.Public | BindingFlags.Instance);
-        private ILHook? ilOrigCharmUpdate;
-        #endregion
-        #region Quick Slash IL Hooks
-        private static readonly MethodInfo origDoAttack = typeof(HeroController).GetMethod("orig_DoAttack", BindingFlags.NonPublic | BindingFlags.Instance);
-        private ILHook? ilOrigDoAttack;
-        #endregion
-        #endregion
-
         #region Changes
         #region Notch Cost Changes
         private void ChangeNotchCosts(On.GameManager.orig_CalculateNotchesUsed orig, GameManager self)
         {
-            //for (int i = 0; i <= 39; i++)
-            //{
-            //    PlayerData.instance.SetInt($"charmCost_{i + 1}", CharmCosts[i]);
-            //}
             PlayerDataAccess.charmCost_1 = LS.charm1NotchCost;
             PlayerDataAccess.charmCost_2 = LS.charm2NotchCost;
             PlayerDataAccess.charmCost_3 = LS.charm3NotchCost;
@@ -285,7 +312,6 @@ namespace CharmChanger
         private void GrubsongSoulChanges(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("GRUB_SOUL_MP_COMBO"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<int, int>>(soul => LS.grubsongDamageSoulCombo);
@@ -296,27 +322,6 @@ namespace CharmChanger
         }
         #endregion
         #region Stalwart Shell Changes
-        private void StalwartShellRecoil(ILContext il)
-        {
-            ILCursor cursor = new ILCursor(il).Goto(0);
-            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION"));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => LS.regularRecoil);
-
-            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("RECOIL_DURATION_STAL"));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => LS.stalwartShellRecoil);
-
-        }
-        private IEnumerator StalwartShellInvulnerability(On.HeroController.orig_StartRecoil orig, HeroController self, CollisionSide impactSide, bool spawnDamageEffect, int damageAmount)
-        {
-            // Could not figure out how to change to an IL hook
-
-            self.INVUL_TIME = LS.regularInvulnerability;
-            self.INVUL_TIME_STAL = LS.stalwartShellInvulnerability;
-
-            return orig(self, impactSide, spawnDamageEffect, damageAmount);
-        }
         #endregion
         #region Baldur Shell Changes
         private void BaldurShellKnockback(On.BeginRecoil.orig_OnEnter orig, BeginRecoil self)
@@ -360,8 +365,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
-        // Joni's Requirement
         private void FotFJonisRequirements(On.HutongGames.PlayMaker.Actions.BoolAllTrue.orig_OnEnter orig, BoolAllTrue self)
         {
             if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Fury" && self.State.Name == "Check HP")
@@ -371,8 +374,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
-        // Scaling (regular attacks)
         private void FotFNailScaling(On.HutongGames.PlayMaker.Actions.SetFsmFloat.orig_OnEnter orig, SetFsmFloat self)
         {
             if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Fury" && self.State.Name == "Activate")
@@ -382,7 +383,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void FotFNailArtScaling(On.HutongGames.PlayMaker.Actions.FloatMultiply.orig_OnEnter orig, FloatMultiply self)
         {
             if (self.Fsm.Name == "nailart_damage" && self.State.Name == "Fury?")
@@ -402,7 +402,6 @@ namespace CharmChanger
                 {
                     self.floatValue.Value = LS.regularFocusTime / 33f;
                 }
-
                 else if (self.floatValue.Name == "Time Per MP Drain CH")
                 {
                     self.floatValue.Value = LS.quickFocusFocusTime / 33f;
@@ -438,26 +437,11 @@ namespace CharmChanger
         }
         #endregion
         #region Lifeblood Heart/Core Changes
-        // Lifeblood Granted
-        private void LifebloodChanges(ILContext il)
-        {
-            ILCursor cursor = new ILCursor(il).Goto(0);
-
-            cursor.TryGotoNext(i => i.MatchLdcI4(2));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<int, int>>(Lifeblood => LS.lifebloodHeartLifeblood);
-
-            cursor.TryGotoNext(i => i.MatchLdcI4(4));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<int, int>>(Lifeblood => LS.lifebloodCoreLifeblood);
-        }
         #endregion
         #region Defender's Crest Changes
-        // Discount
         private void DefendersCrestCostReduction(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             cursor.TryGotoNext(i => i.MatchLdcR4(0.8f));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(Discount => 100f - ((float)(LS.defendersCrestDiscount / 100f)));
@@ -488,7 +472,6 @@ namespace CharmChanger
         }
         #endregion
         #region Flukenest Changes
-        // Flukes Total
         private void FlukeCount(On.HutongGames.PlayMaker.Actions.FlingObjectsFromGlobalPool.orig_OnEnter orig, FlingObjectsFromGlobalPool self)
         {
             // Vengeful Spirit
@@ -683,16 +666,15 @@ namespace CharmChanger
         }
         private void WallSlashSizeScale(On.HutongGames.PlayMaker.Actions.SendMessage.orig_OnEnter orig, SendMessage self)
         {
-            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Slash Size Modifiers" && self.gameObject.GameObject.Name == "Wall Slash")
+            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Slash Size Modifiers" && self.gameObject.GameObject.Name == "Wall Slash" && self.State.Name.StartsWith("Equipped"))
             {
-                if (self.State.Name == "Equipped 2" || self.State.Name == "Equipped")
-                {
-                    self.functionCall.BoolParameter.Value = LS.longnailMarkOfPrideWallSlash;
-                }
+                self.functionCall.BoolParameter.Value = LS.longnailMarkOfPrideWallSlash;
             }
 
             orig(self);
         }
+        #endregion
+        #region Steady Body Changes
         #endregion
         #region Heavy Blow Changes
         // Wall Slash
@@ -746,7 +728,6 @@ namespace CharmChanger
             {
                 if (self.State.Name == "Equipped")
                 {
-
                     // Wall Slash
                     if (self.gameObject.GameObject.Name == "Wall Slash")
                     {
@@ -804,7 +785,6 @@ namespace CharmChanger
                 {
                     self.integer2.Value = LS.heavyBlowStagger;
                 }
-
                 else
                 {
                     self.integer2.Value = LS.heavyBlowStaggerCombo;
@@ -834,7 +814,6 @@ namespace CharmChanger
                 self.Fsm.GetFsmFloat("Nail Damage Float").Value *= LS.SharpShadowDamageMultiplier;
             }
         }
-
         private void SharpShadowDashMasterDamageScaling(On.HutongGames.PlayMaker.Actions.FloatMultiplyV2.orig_OnEnter orig, FloatMultiplyV2 self)
         {
             if(self.Fsm.GameObject.name == "Attacks" && self.Fsm.Name == "Set Sharp Shadow Damage" && self.State.Name == "Master")
@@ -843,14 +822,6 @@ namespace CharmChanger
             }
 
             orig(self);
-        }
-        private void SharpShadowSpeed(ILContext il)
-        {
-            ILCursor cursor = new ILCursor(il).Goto(0);
-
-            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("DASH_SPEED_SHARP"));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(Speed => LS.SharpShadowDashSpeed);
         }
         #endregion
         #region Spore Shroom Changes
@@ -920,7 +891,6 @@ namespace CharmChanger
                     self.x.Value = LS.regularVSSizeScaleX;
                     self.y.Value = LS.regularVSSizeScaleY;
                 }
-
                 else if (self.State.ActiveActionIndex == 6)
                 {
                     self.x.Value = LS.shamanStoneVSSizeScaleX;
@@ -969,7 +939,6 @@ namespace CharmChanger
                     self.setValue.Value = LS.shamanStoneVSDamage;
                 }
             }
-
             else if (self.Fsm.GameObject.name == "Fireball2 Spiral(Clone)" && self.Fsm.Name == "Fireball Control" && self.State.Name == "Set Damage")
             {
                 if (self.State.ActiveActionIndex == 3)
@@ -981,7 +950,6 @@ namespace CharmChanger
                     self.setValue.Value = LS.shamanStoneSSDamage;
                 }
             }
-
             else if (self.Fsm.Name == "Set Damage" && self.State.Name == "Set Damage")
             {
                 if (self.Fsm.GameObject.transform.parent.gameObject.name == "Scr Heads")
@@ -995,7 +963,6 @@ namespace CharmChanger
                         self.setValue.Value = LS.shamanStoneHWDamage;
                     }
                 }
-
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Scr Heads 2")
                 {
                     if (self.State.ActiveActionIndex == 0)
@@ -1007,7 +974,6 @@ namespace CharmChanger
                         self.setValue.Value = LS.shamanStoneASDamage;
                     }
                 }
-
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Q Slam")
                 {
                     if (self.State.ActiveActionIndex == 0)
@@ -1019,7 +985,6 @@ namespace CharmChanger
                         self.setValue.Value = LS.shamanStoneDDiveDamage;
                     }
                 }
-
                 else if (self.Fsm.GameObject.transform.parent.gameObject.name == "Q Slam 2")
                 {
                     if (self.Fsm.GameObject.name == "Hit L")
@@ -1045,7 +1010,6 @@ namespace CharmChanger
                         }
                     }
                 }
-
                 else if (self.Fsm.GameObject.name == "Q Fall Damage")
                 {
                     if (self.State.ActiveActionIndex == 0)
@@ -1057,7 +1021,6 @@ namespace CharmChanger
                         self.setValue.Value = LS.shamanStoneDiveDamage;
                     }
                 }
-
             }
 
             orig(self);
@@ -1198,7 +1161,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void StrengthDamageIncrease(On.HutongGames.PlayMaker.Actions.FloatMultiply.orig_OnEnter orig, FloatMultiply self)
         {
             if (self.Fsm.GameObject.name == "Attacks" && self.Fsm.Name == "Set Slash Damage" && self.State.Name == "Glass Attack Modifier")
@@ -1208,11 +1170,9 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void GreedGeoIncrease(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             while(cursor.TryGotoNext(i => i.MatchLdcR4(0.2f)))
             {
                 cursor.GotoNext();
@@ -1221,27 +1181,8 @@ namespace CharmChanger
         }
         #endregion
         #region Nailmaster's Glory Changes
-        private void NailArtChargeTimes(ILContext il)
-        {
-            ILCursor cursor = new ILCursor(il).Goto(0);
-
-            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_CHARM"));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => LS.nailmastersGloryChargeTime);
-
-            cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("NAIL_CHARGE_TIME_DEFAULT"));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(time => LS.regularChargeTime);
-        }
         #endregion
         #region Joni's Blessing Changes
-        private void JonisScaling(ILContext il)
-        {
-            ILCursor cursor = new ILCursor(il).Goto(0);
-            cursor.GotoNext(i => i.MatchLdcR4(1.4f));
-            cursor.GotoNext();
-            cursor.EmitDelegate<Func<float, float>>(scale => 1f + (float)(LS.jonisBlessingScaling / 100f));
-        }
         #endregion
         #region Shape Of Unn Changes
         private void SlugSpeeds(On.HutongGames.PlayMaker.Actions.SetFloatValue.orig_OnEnter orig, SetFloatValue self)
@@ -1258,18 +1199,15 @@ namespace CharmChanger
                     {
                         self.floatValue.Value = LS.shapeOfUnnSpeed;
                     }
-
                     else if (self.State.ActiveActionIndex == 6)
                     {
                         self.floatValue.Value = -LS.shapeOfUnnQuickFocusSpeed;
                     }
-
                     else if (self.State.ActiveActionIndex == 7)
                     {
                         self.floatValue.Value = LS.shapeOfUnnQuickFocusSpeed;
                     }
                 }
-
             }
 
             orig(self);
@@ -1282,7 +1220,6 @@ namespace CharmChanger
             {
                 self.float2.Value = LS.hivebloodTimer / 2f;
             }
-
             else if (self.Fsm.GameObject.name == "Blue Health Hive(Clone)" && self.Fsm.Name == "blue_health_display" && self.State.Name.Contains("Regen "))
             {
                 self.float2.Value = LS.hivebloodJonisTimer / 2f;
@@ -1290,7 +1227,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         #endregion
         #region Dream Wielder Changes
         private void DreamWielderSoul(ILContext il)
@@ -1321,7 +1257,6 @@ namespace CharmChanger
             cursor.GotoNext();
             cursor.EmitDelegate<Func<int, int>>(chanceHigh => LS.dreamWielderEssenceChanceHigh);
         }
-
         #endregion
         #region Dashmaster Changes
         private void DashmasterChanges(ILContext il)
@@ -1357,7 +1292,6 @@ namespace CharmChanger
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(time => LS.regularAttackCooldown);
         }
-
         private void QuickSlashAttackDuration(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
@@ -1379,7 +1313,6 @@ namespace CharmChanger
                 {
                     self.setValue.Value = LS.spellTwisterSpellCost;
                 }
-
                 else if (self.State.Name == "Normal")
                 {
                     self.setValue.Value = LS.regularSpellCost;
@@ -1393,7 +1326,6 @@ namespace CharmChanger
         private void GrubberflysSizeScale(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             while(cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("MANTIS_CHARM_SCALE")))
             {
                 cursor.GotoNext();
@@ -1429,7 +1361,6 @@ namespace CharmChanger
         private void GrubberflysFotFRequirements(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             while (cursor.TryGotoNext
                 (
                 i => i.MatchLdstr("health"),
@@ -1453,7 +1384,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void KingsoulSoul(On.HutongGames.PlayMaker.Actions.SendMessageV2.orig_DoSendMessage orig, SendMessageV2 self)
         {
             if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "White Charm" && self.State.Name == "Soul UP")
@@ -1463,13 +1393,11 @@ namespace CharmChanger
 
             orig(self);
         }
-
         #endregion
         #region Sprintmaster Changes
         private void SprintmasterSpeed(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             cursor.TryGotoNext(i => i.MatchLdfld<HeroController>("WALK_SPEED"));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(speed => LS.regularWalkSpeed);
@@ -1506,19 +1434,16 @@ namespace CharmChanger
                     self.x.Value = -LS.dreamshieldSizeScale;
                     self.y.Value = LS.dreamshieldSizeScale;
                 }
-
                 else if (self.State.ActiveActionIndex == 1)
                 {
                     self.x.Value = LS.dreamshieldSizeScale;
                     self.y.Value = LS.dreamshieldSizeScale;
                 }
-
                 else if (self.State.ActiveActionIndex == 3)
                 {
                     self.x.Value = -LS.dreamshieldDreamWielderSizeScale;
                     self.y.Value = LS.dreamshieldDreamWielderSizeScale;
                 }
-
                 else if (self.State.ActiveActionIndex == 4)
                 {
                     self.x.Value = LS.dreamshieldDreamWielderSizeScale;
@@ -1536,7 +1461,6 @@ namespace CharmChanger
                 {
                     self.setValue.Value = LS.dreamshieldSpeed;
                 }
-
                 else if (self.State.Name == "Focus")
                 {
                     self.setValue.Value = LS.dreamshieldFocusSpeed;
@@ -1585,7 +1509,6 @@ namespace CharmChanger
                     self.min.Value = -LS.weaversongSpeedMax;
                     self.max.Value = -LS.weaversongSpeedMin;
                 }
-
                 else if (self.State.Name == "Run R")
                 {
                     self.min.Value = LS.weaversongSpeedMin;
@@ -1656,12 +1579,10 @@ namespace CharmChanger
                 {
                     self.intValue.Value = LS.grimmchildDamage2;
                 }
-
                 else if (self.State.Name == "Level 3")
                 {
                     self.intValue.Value = LS.grimmchildDamage3;
                 }
-
                 else if (self.State.Name == "Level 4")
                 {
                     self.intValue.Value = LS.grimmchildDamage4;
@@ -1696,7 +1617,6 @@ namespace CharmChanger
         private void CarefreeMelodyChances(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
-
             cursor.TryGotoNext(i => i.MatchLdcR4(10));
             cursor.GotoNext();
             cursor.EmitDelegate<Func<float, float>>(chance => LS.carefreeMelodyChance1);
