@@ -210,7 +210,7 @@ namespace CharmChanger
         }
         #endregion
         #region Baldur Shell Settings
-        [InputFloatElement("Baldur Shell Options", "Enemy Knockback Mult.", 0f, 5f)]
+        [InputFloatElement("Baldur Shell Options", "Enemy Knockback Multiplier", 0f, 5f)]
         public float baldurShellKnockbackMult = 1.0f;
 
         [SliderIntElement("Baldur Shell Options", "Blocks", 0, 4)]
