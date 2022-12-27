@@ -326,7 +326,7 @@ namespace CharmChanger
         #region Baldur Shell Changes
         private void BaldurShellKnockback(On.BeginRecoil.orig_OnEnter orig, BeginRecoil self)
         {
-            if (self.Fsm.GameObject.name.Contains("Hit ") && self.Fsm.Name == "push_enemy" && self.State.Name == "Send Event")
+            if (self.Fsm.GameObject.name.StartsWith("Hit ") && self.Fsm.Name == "push_enemy" && self.State.Name == "Send Event")
             {
                 self.attackMagnitude = 2f * LS.baldurShellKnockbackMult;
             }
@@ -540,7 +540,7 @@ namespace CharmChanger
         #region Thorns of Agony Changes
         private void ThornsOfAgonyDamageScale(On.HutongGames.PlayMaker.Actions.SetFsmInt.orig_OnEnter orig, SetFsmInt self)
         {
-            if (self.Fsm.GameObject.name.Contains("Hit ") && self.Fsm.Name == "set_thorn_damage" && self.State.Name == "Set")
+            if (self.Fsm.GameObject.name.StartsWith("Hit ") && self.Fsm.Name == "set_thorn_damage" && self.State.Name == "Set")
             {
                 self.setValue.Value = (int)(self.setValue.Value * LS.thornsOfAgonyDamageMultiplier);
             }
@@ -1212,11 +1212,11 @@ namespace CharmChanger
         #region Hiveblood Changes
         private void HivebloodTimers(On.HutongGames.PlayMaker.Actions.FloatCompare.orig_OnEnter orig, FloatCompare self)
         {
-            if (self.Fsm.GameObject.name == "Health" && self.Fsm.Name == "Hive Health Regen" && self.State.Name.Contains("Recover "))
+            if (self.Fsm.GameObject.name == "Health" && self.Fsm.Name == "Hive Health Regen" && self.State.Name.StartsWith("Recover "))
             {
                 self.float2.Value = LS.hivebloodTimer / 2f;
             }
-            else if (self.Fsm.GameObject.name == "Blue Health Hive(Clone)" && self.Fsm.Name == "blue_health_display" && self.State.Name.Contains("Regen "))
+            else if (self.Fsm.GameObject.name == "Blue Health Hive(Clone)" && self.Fsm.Name == "blue_health_display" && self.State.Name.StartsWith("Regen "))
             {
                 self.float2.Value = LS.hivebloodJonisTimer / 2f;
             }
@@ -1331,7 +1331,7 @@ namespace CharmChanger
         }
         private void GrubberflysElegyFotFScaling(On.HutongGames.PlayMaker.Actions.FloatMultiply.orig_OnEnter orig, FloatMultiply self)
         {
-            if (self.Fsm.GameObject.name.Contains("Grubberfly Beam") && self.Fsm.Name == "Control" && self.State.Name == "Fury Multiplier")
+            if (self.Fsm.GameObject.name.StartsWith("Grubberfly Beam") && self.Fsm.Name == "Control" && self.State.Name == "Fury Multiplier")
             {
                 self.multiplyBy.Value = 1f + (float)(LS.grubberflysElegyFuryOfTheFallenScaling / 100f);
             }
