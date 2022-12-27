@@ -1127,10 +1127,8 @@ namespace CharmChanger
             cursor.GotoNext();
             cursor.EmitDelegate<Func<int, int>>(HatchlingBonusDamage => LS.glowingWombFuryOfTheFallenDamage);
         }
-
         private void HatchlingSpawnRequirements(On.HutongGames.PlayMaker.Actions.IntCompare.orig_OnEnter orig, IntCompare self)
         {
-
             if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Hatchling Spawn")
             {
                 // Spawn Cost
@@ -1152,7 +1150,7 @@ namespace CharmChanger
         #region Fragile Charms Changes
         private void FragileCharmsBreak(On.HutongGames.PlayMaker.Actions.PlayerDataBoolTest.orig_OnEnter orig, PlayerDataBoolTest self)
         {
-            if (self.Fsm.GameObject.name == "Hero Death" && self.Fsm.Name == "Death Anim" && self.State.Name.Contains("Break Glass ") && self.boolName.Value.Contains("_unbreakable"))
+            if (self.Fsm.GameObject.name == "Hero Death" && self.Fsm.Name == "Hero Death Anim" && self.State.Name.StartsWith("Break Glass ") && self.boolName.Value.EndsWith("_unbreakable"))
             {
                 self.isFalse = LS.fragileCharmsBreak ? null : FsmEvent.GetFsmEvent("FINISHED");
             }
