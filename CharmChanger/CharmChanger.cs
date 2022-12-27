@@ -219,7 +219,7 @@ namespace CharmChanger
             };
             #endregion
             #region Spell Twister Init
-            On.HutongGames.PlayMaker.Actions.SetFsmInt.OnEnter += SpellTwisterSpellCost;
+            On.HutongGames.PlayMaker.Actions.IntCompare.OnEnter += SpellTwisterSpellCosts;
             #endregion
             #region Grubberfly's Elegy Init
             On.HeroController.TakeDamage += GrubberflysElegyJoniBeam;
@@ -490,7 +490,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void FlukenestDefendersCrestDurationAndDamage(On.HutongGames.PlayMaker.Actions.Wait.orig_OnEnter orig, Wait self)
         {
             if (self.Fsm.GameObject.name == "Knight Dung Cloud" && self.Fsm.Name == "Control" && self.State.Name == "Collider On")
@@ -505,7 +504,6 @@ namespace CharmChanger
 
             orig(self);
         }
-
         private void FlukenestEnableHook(ILContext il)
         {
             ILCursor cursor = new ILCursor(il).Goto(0);
@@ -1305,21 +1303,14 @@ namespace CharmChanger
         }
         #endregion
         #region Spell Twister Changes
-        private void SpellTwisterSpellCost(On.HutongGames.PlayMaker.Actions.SetFsmInt.orig_OnEnter orig, SetFsmInt self)
+        private void SpellTwisterSpellCosts(On.HutongGames.PlayMaker.Actions.IntCompare.orig_OnEnter orig, IntCompare self)
         {
-            if (self.Fsm.GameObject.name == "Charm Effects" && self.Fsm.Name == "Set Spell Cost")
+            if (self.Fsm.GameObject.name == "Knight" && self.Fsm.Name == "Spell Control" && self.State.Name.StartsWith("Can Cast?"))
             {
-                if (self.State.Name == "Mage")
-                {
-                    self.setValue.Value = LS.spellTwisterSpellCost;
-                }
-                else if (self.State.Name == "Normal")
-                {
-                    self.setValue.Value = LS.regularSpellCost;
-                }
+                self.integer2.Value = PlayerDataAccess.equippedCharm_33 ? LS.spellTwisterSpellCost : LS.regularSpellCost;
             }
 
-            orig(self);
+                orig(self);
         }
         #endregion
         #region Grubberfly's Elegy Changes

@@ -48,7 +48,7 @@ Options:
     * Dashmaster Damage Increase
     * Shadow Dash Speed
 * Spore Shroom
-    * Whether the cooldown reset on taking damage
+    * Whether the cooldown resets on taking damage
     * Cloud Cooldown / Recharge Time
     * Cloud Duration
     * Cloud Damage Timer
