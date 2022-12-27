@@ -1,6 +1,12 @@
 ﻿# CharmChanger
 
-A Hollow Knight mod that lets you customize the strength of Charm effects. Most changes take place immediately, some require sitting at a Bench and then equipping or unequipping any Charm.
+A Hollow Knight mod that lets you customize the strength of Charm effects.
+
+Mulhima helped significantly with the menus.
+
+ Most changes take place immediately, some require sitting at a Bench and then equipping or unequipping any Charm, and Dreamshield rotation speeds require Focusing.
+
+If Notch costs or Notches filled or some other setting seems messed up, remove all Charms and then hit reset defaults.
 
 Options:
 * All Charms
