@@ -224,7 +224,7 @@ namespace CharmChanger
             #region Grubberfly's Elegy Init
             On.HeroController.TakeDamage += GrubberflysElegyJoniBeam;
             On.HutongGames.PlayMaker.Actions.FloatMultiply.OnEnter += GrubberflysElegyFotFScaling;
-            On.HutongGames.PlayMaker.Actions.FloatOperator.OnEnter += GrubberflysElegyDamage;
+            ModHooks.GetPlayerIntHook += GrubberflysElegyDamage;
             IL.HeroController.Attack += GrubberflysSizeScale;
             IL.HeroController.Attack += GrubberflysFotFRequirements;
             #endregion
@@ -1338,14 +1338,13 @@ namespace CharmChanger
 
             orig(self);
         }
-        private void GrubberflysElegyDamage(On.HutongGames.PlayMaker.Actions.FloatOperator.orig_OnEnter orig, FloatOperator self)
+        private int GrubberflysElegyDamage(string name, int orig)
         {
-            if (self.Fsm.GameObject.name == "Attacks" && self.Fsm.Name == "Set Slash Damage" && self.State.Name == "Set Beam Damage")
+            if (name == "beamDamage")
             {
-                self.float2.Value = 0.5f * LS.grubberflysElegyDamageScale;
+                return (int)(orig * LS.grubberflysElegyDamageScale);
             }
-
-            orig(self);
+            return orig;
         }
         private void GrubberflysFotFRequirements(ILContext il)
         {
