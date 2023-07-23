@@ -16,7 +16,7 @@ Options:
 * Stalwart Shell
     * Invulnerability Time
     * Recoil Time
-* Baldur 
+* Baldur Shell
     * Knockback
     * Blocks
 * Fury of the Fallen
