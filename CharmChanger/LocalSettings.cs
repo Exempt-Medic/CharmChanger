@@ -163,7 +163,7 @@ namespace CharmChanger
             charm33NotchCost = 2;
             charm34NotchCost = 4;
             charm35NotchCost = 3;
-            charm36NotchCost = 5;
+            charm36NotchCost = PlayerDataAccess.royalCharmState == 4 ? 0 : 5;
             charm37NotchCost = 1;
             charm38NotchCost = 3;
             charm39NotchCost = 2;
